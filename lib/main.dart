@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'constants/colors.dart';
 import 'screens/onboarding_screen.dart';
+import 'providers/notification_provider.dart';
 
 void main() {
-  runApp(const ClearanceApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => NotificationProvider(),
+      child: const ClearanceApp(),
+    ),
+  );
 }
 
 class ClearanceApp extends StatelessWidget {
