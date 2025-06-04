@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
+
+import 'bindings/initial_binding.dart';
 import 'constants/colors.dart';
-import 'screens/onboarding_screen.dart';
-import 'providers/notification_provider.dart';
+import 'routes/app_pages.dart';
+import 'routes/app_routes.dart';
+import 'package:clearance_app/modules/auth/controllers/auth_controller.dart';
+
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => NotificationProvider(),
-      child: const ClearanceApp(),
-    ),
-  );
+  runApp(const ClearanceApp());
+    Get.put(AuthController()); // 🟦 Register it here before runApp
+
+  
 }
 
 class ClearanceApp extends StatelessWidget {
@@ -18,8 +20,12 @@ class ClearanceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Certificate Clearance',
+      debugShowCheckedModeBanner: false,
+      initialBinding: InitialBinding(),
+      initialRoute: AppRoutes.onboarding,
+      getPages: AppPages.pages,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,
         fontFamily: 'Roboto',
@@ -36,8 +42,6 @@ class ClearanceApp extends StatelessWidget {
           ),
         ),
       ),
-      debugShowCheckedModeBanner: false,
-      home: const OnboardingScreen(),
     );
   }
 }
