@@ -1,45 +1,73 @@
-// lib/modules/auth/services/api_client.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:get/get.dart';
-import '../controllers/auth_controller.dart';      // adjust path if different
+import 'package:get_storage/get_storage.dart';
 
 class ApiClient {
-  // 👇 Change only the base part to match your server & port
   static const String _base = 'http://10.0.2.2:5000/api';
 
-  final _auth = Get.find<AuthController>();        // need AuthController registered
+  // Use GetStorage to retrieve the latest token every request
+  final _box = GetStorage();
 
   /* --------------------------- POST --------------------------- */
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? body,
   }) async {
+    final url = '$_base$path';
+    print('🔗 [ApiClient] POST → $url');
     final res = await http.post(
-      Uri.parse('$_base$path'),
+      Uri.parse(url),
       headers: _headers(),
       body: jsonEncode(body ?? {}),
     );
+    print('⬅️ [ApiClient] POST $url ← status ${res.statusCode}');
     return _wrap(res);
   }
 
   /* ---------------------------- GET --------------------------- */
   Future<Map<String, dynamic>> get(String path) async {
+    final url = '$_base$path';
+    print('🔗 [ApiClient] GET → $url');
     final res = await http.get(
-      Uri.parse('$_base$path'),
+      Uri.parse(url),
       headers: _headers(),
     );
+    print('⬅️ [ApiClient] GET $url ← status ${res.statusCode}');
     return _wrap(res);
   }
 
-  /* ------------------------- helpers -------------------------- */
-  Map<String, String> _headers() => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${_auth.token}',
-      };
+  /* ------------------------- Headers -------------------------- */
+  Map<String, String> _headers() {
+    final tokenValue = _box.read('token') ?? '';
+    if (tokenValue.isEmpty) {
+      print('⚠️ [ApiClient] WARNING: token is EMPTY');
+    } else {
+      print('🔑 [ApiClient] sending token: ${tokenValue.toString().substring(0, 20)}...');
+    }
 
-  Map<String, dynamic> _wrap(http.Response res) => {
-        'code': res.statusCode,
-        'data': res.body.isEmpty ? null : jsonDecode(res.body),
-      };
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $tokenValue',
+    };
+  }
+
+  /* ---------------------- Response Wrap ----------------------- */
+  Map<String, dynamic> _wrap(http.Response res) {
+    final code = res.statusCode;
+    dynamic data;
+
+    if (res.body.isNotEmpty) {
+      try {
+        data = jsonDecode(res.body);
+      } catch (e) {
+        print('❌ [ApiClient] Failed to decode JSON: $e');
+        data = null;
+      }
+    }
+
+    return {
+      'code': code,
+      'data': data,
+    };
+  }
 }

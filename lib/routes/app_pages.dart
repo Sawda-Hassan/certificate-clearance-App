@@ -12,6 +12,8 @@ import '../modules/clearance/veiws/groupclearancestatusscreen.dart';
 import '../modules/clearance/veiws/individual_clearance_screen.dart';
 import '../modules/name_correction/views/name_correction_screen.dart';
 import '../modules/appointments/views/appointment_screen.dart';
+import '../modules/libraryclearance/view/library_clearance_page.dart'; // Or your real path!
+
 
 import 'app_routes.dart';
 
@@ -37,5 +39,8 @@ class AppPages {
     GetPage(name: AppRoutes.individualClearance, page: () => const IndividualClearanceScreen()),
     GetPage(name: AppRoutes.nameCorrection, page: () => const NameCorrectionScreen()),
     GetPage(name: AppRoutes.appointment, page: () => const AppointmentScreen()),
+    GetPage(name: AppRoutes.libraryClearance, page: () =>  LibraryClearancePage()), // ADD THIS
+
+
   ];
 }

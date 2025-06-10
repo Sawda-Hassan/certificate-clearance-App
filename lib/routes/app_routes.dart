@@ -10,4 +10,6 @@ class AppRoutes {
   static const individualClearance = '/individual-clearance';
   static const nameCorrection = '/name-correction';
   static const appointment = '/appointment';
+  static const libraryClearance = '/library-clearance'; // 🟢 ADD THIS
+
 }

@@ -1,30 +1,34 @@
+// lib/YourModule/student_welcome_screen.dart
+// --------------------------------------------------
+// Navigates to the FacultyClearancePage to show the group’s clearance status.
+// --------------------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// ─── your screens ───────────────────────────────────────────────────────────────
-import '../../FacultyClearancepage/FacultyClearancePage.dart';   // adjust path if needed
-// If you still want the intermediary FacultyClearancePage keep the import, but
-// note: navigation is already inside FacultyController so it's optional.
+// ─── Your screens ──────────────────────────────────────────────────────────
+// Adjust the path below if necessary (matching your folder structure):
+import '../../FacultyClearancepage/FacultyClearancePage.dart';
 
-// ─── controllers ───────────────────────────────────────────────────────────────
-import '../../FacultyClearancepage/controlerr/faculty_controller.dart';          // ← update path
+// ─── Controllers ───────────────────────────────────────────────────────────
+import '../../FacultyClearancepage/controlerr/faculty_controller.dart';
 
 class StudentWelcomeScreen extends StatelessWidget {
   final String studentName;
   final String gender;
 
   const StudentWelcomeScreen({
-    super.key,
+    Key? key,
     required this.studentName,
     required this.gender,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // create / find the controller once
-    final facultyCtrl = Get.put(FacultyController());
+    // Instantiate (or find) the FacultyController once for this flow.
+    final FacultyController facultyCtrl = Get.put(FacultyController());
 
-    final profileImage = gender.toLowerCase() == 'female'
+    final String profileImage = gender.toLowerCase() == 'female'
         ? 'assets/images/girl_profile.png'
         : 'assets/images/boy_profile.png';
 
@@ -70,8 +74,8 @@ class StudentWelcomeScreen extends StatelessWidget {
               child: Center(
                 child: Image.asset(
                   'assets/images/g.png',
-                  width: 1050,
-                  height: 1050,
+                  width: 300, // scale down if 1050 is too big
+                  height: 300,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -88,7 +92,13 @@ class StudentWelcomeScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: facultyCtrl.isLoading.value
                           ? null
-                          : () => facultyCtrl.startClearance(),
+                          : () async {
+                              // 1) Call startClearance() to ensure the group record exists
+                              await facultyCtrl.startClearance();
+
+                              // 2) Navigate to the FacultyClearancePage to read status
+                              Get.to(() => FacultyClearancePage());
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0A2647),
                         shape: RoundedRectangleBorder(
@@ -97,7 +107,9 @@ class StudentWelcomeScreen extends StatelessWidget {
                       ),
                       child: facultyCtrl.isLoading.value
                           ? const CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white)
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            )
                           : const Text(
                               'START CERTIFICATE CLEARANCE',
                               style: TextStyle(

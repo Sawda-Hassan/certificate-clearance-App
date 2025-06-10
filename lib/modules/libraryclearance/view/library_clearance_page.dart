@@ -2,20 +2,15 @@ import 'package:flutter/material.dart' hide StepState;
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'controlerr/faculty_controller.dart';
-import '../../routes/app_routes.dart';
-import './model/faculty_models.dart';
+import '../controller/library_controller.dart';
 import 'dart:async';
 
-final ctrl = Get.put(FacultyController(), tag: 'faculty');
-
-// Color palette
+// ---- Color palette ----
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
-const _borderColor = Color(0xFFE9EDF5);
 
-// Wave-shaped AppBar clipper
+// ---- Wave AppBar ----
 class _AppBarWaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) => Path()
@@ -28,8 +23,6 @@ class _AppBarWaveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
-
-// Curved AppBar widget
 class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   const CurvedAppBar({Key? key, required this.title}) : super(key: key);
@@ -59,7 +52,15 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Stack(
             alignment: Alignment.topCenter,
             children: [
-              Align(alignment: Alignment.topLeft, child: BackButton(color: Colors.white)),
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ),
               Text(
                 title,
                 style: const TextStyle(
@@ -76,22 +77,22 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-// Map backend status to label, color, icon, and message
-Map<String, dynamic> facultyStatusLabel(String status) {
+// ---- Library Status Label ----
+Map<String, dynamic> libraryStatusLabel(String status) {
   switch (status) {
     case 'Approved':
       return {
         'label': 'Cleared',
         'color': _green,
         'icon': Icons.emoji_events,
-        'msg': 'Your faculty clearance is successfully cleared',
+        'msg': 'Your library clearance is successfully cleared',
       };
     case 'Rejected':
       return {
         'label': 'Rejected',
         'color': Colors.red,
         'icon': Icons.cancel,
-        'msg': 'Your faculty clearance was rejected',
+        'msg': 'Your library clearance was rejected',
       };
     case 'Pending':
     default:
@@ -99,28 +100,29 @@ Map<String, dynamic> facultyStatusLabel(String status) {
         'label': 'Pending',
         'color': Colors.orange,
         'icon': Icons.hourglass_empty,
-        'msg': 'Your faculty clearance is pending',
+        'msg': 'Your library clearance is pending',
       };
   }
 }
 
-class FacultyClearancePage extends StatefulWidget {
-  const FacultyClearancePage({Key? key}) : super(key: key);
+// ---- MAIN PAGE ----
+class LibraryClearancePage extends StatefulWidget {
+  const LibraryClearancePage({Key? key}) : super(key: key);
 
   @override
-  State<FacultyClearancePage> createState() => _FacultyClearancePageState();
+  State<LibraryClearancePage> createState() => _LibraryClearancePageState();
 }
 
-class _FacultyClearancePageState extends State<FacultyClearancePage> {
-  late FacultyController ctrl;
+class _LibraryClearancePageState extends State<LibraryClearancePage> {
+  late LibraryController ctrl;
   Timer? _refreshTimer;
   bool _didAutoRefresh = false;
 
   @override
   void initState() {
     super.initState();
-    ctrl = Get.put(FacultyController(), tag: 'faculty');
-    // Listen for changes in the status and refresh once if still pending
+    ctrl = Get.put(LibraryController(), tag: 'library');
+    // Refresh logic
     ever<String>(ctrl.status, (status) async {
       if (!_didAutoRefresh && status == 'Pending') {
         _refreshTimer?.cancel();
@@ -147,10 +149,15 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
         );
       }
 
-      final progress = ctrl.percent.clamp(0.0, 1.0);
+      // --- PROGRESS LOGIC: NO DESIGN CHANGE ---
+      // 20% if only faculty, 40% if library also approved
+      final isLibraryApproved = ctrl.status.value == 'Approved';
+      final isLibraryRejected = ctrl.status.value == 'Rejected';
+      final progress = isLibraryApproved ? 0.4 : 0.2;
       final percentLabel = (progress * 100).round();
+      // --- END PROGRESS LOGIC ---
 
-      final statusMap = facultyStatusLabel(ctrl.status.value);
+      final statusMap = libraryStatusLabel(ctrl.status.value);
       final statusColor = statusMap['color'] as Color;
       final statusIcon = statusMap['icon'] as IconData;
       final statusMsg = statusMap['msg'] as String;
@@ -158,7 +165,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
 
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CurvedAppBar(title: 'Group Clearance Status'),
+        appBar: const CurvedAppBar(title: 'Library Clearance Status'),
         bottomNavigationBar: const _BottomNav(),
         body: Column(
           children: [
@@ -170,7 +177,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                   children: [
                     // Header
                     Text(
-                      'Faculty Clearance Status',
+                      'Library Clearance Status',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
@@ -180,7 +187,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                     ),
                     const SizedBox(height: 48),
 
-                    // Status card (real status from backend)
+                    // Status card
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -194,7 +201,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(color: _navy, shape: BoxShape.circle),
-                              child: const Icon(Icons.account_balance, color: Colors.white, size: 24),
+                              child: const Icon(Icons.local_library, color: Colors.white, size: 24),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -202,7 +209,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Faculty',
+                                    'Library',
                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _navy),
                                   ),
                                   const SizedBox(height: 4),
@@ -226,7 +233,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                     ),
                     const SizedBox(height: 62),
 
-                    // Status message (show rejection reason if exists)
+                    // Status message (remarks for rejection)
                     Center(
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
@@ -246,8 +253,8 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                               const SizedBox(width: 8),
                               Flexible(
                                 child: Text(
-                                  statusLabel == 'Rejected' && ctrl.rejectionReason.value.isNotEmpty
-                                      ? ctrl.rejectionReason.value
+                                  isLibraryRejected && ctrl.remarks.value.isNotEmpty
+                                      ? ctrl.remarks.value
                                       : statusMsg,
                                   style: const TextStyle(
                                     fontSize: 13,
@@ -264,7 +271,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                     ),
                     const SizedBox(height: 80),
 
-                    // Progress label (NEW)
+                    // Progress label
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0, bottom: 15.0),
                       child: Text(
@@ -344,15 +351,9 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
               child: ElevatedButton(
-onPressed: (ctrl.status.value == 'Approved')
-    ? () {
-        print('Navigating to Library Clearance!');
-        Get.offAllNamed(AppRoutes.libraryClearance);
-      }
-    : null,
-
-
-
+                onPressed: isLibraryApproved
+                    ? () => Get.offAllNamed('/lab') // Go to next step!
+                    : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),
                   backgroundColor: _navy,
@@ -361,11 +362,11 @@ onPressed: (ctrl.status.value == 'Approved')
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(
-                  'PROCEED LIBRARY CLEARANCE',
+                  'PROCEED LAB CLEARANCE',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: ctrl.status.value == 'Approved'? const Color.fromARGB(255, 255, 250, 250) : Colors.black38,
+                    color: isLibraryApproved ? Colors.white : Colors.black38,
                   ),
                 ),
               ),
@@ -377,7 +378,7 @@ onPressed: (ctrl.status.value == 'Approved')
   }
 }
 
-// Bottom navigation bar
+// ---- Bottom Navigation (reuse yours or this sample) ----
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
   @override
