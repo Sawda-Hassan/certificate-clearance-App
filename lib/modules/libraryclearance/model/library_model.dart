@@ -2,7 +2,6 @@ class LibraryModel {
   final String status;
   final String remarks;
   final String? groupId;
-  // add more fields as needed
 
   LibraryModel({
     required this.status,

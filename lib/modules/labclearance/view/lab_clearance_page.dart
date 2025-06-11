@@ -2,14 +2,13 @@ import 'package:flutter/material.dart' hide StepState;
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import '../controller/library_controller.dart';
+import '../controller/lab_controller.dart';
 
-// ---- Color palette ----
+// Colors
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
 
-// ---- Wave AppBar ----
 class _AppBarWaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) => Path()
@@ -77,22 +76,29 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-// ---- Library Status Label ----
-Map<String, dynamic> libraryStatusLabel(String status) {
+// Status label builder
+Map<String, dynamic> labStatusLabel(String status) {
   switch (status) {
     case 'Approved':
       return {
         'label': 'Cleared',
         'color': _green,
         'icon': Icons.emoji_events,
-        'msg': 'Your library clearance is successfully cleared',
+        'msg': 'Your lab clearance is successfully cleared',
       };
     case 'Rejected':
       return {
         'label': 'Rejected',
         'color': Colors.red,
         'icon': Icons.cancel,
-        'msg': 'Your library clearance was rejected',
+        'msg': 'Your lab clearance was rejected',
+      };
+    case 'Incomplete':
+      return {
+        'label': 'Incomplete',
+        'color': Colors.deepOrange,
+        'icon': Icons.warning,
+        'msg': 'Your lab clearance is incomplete',
       };
     case 'Pending':
     default:
@@ -100,31 +106,25 @@ Map<String, dynamic> libraryStatusLabel(String status) {
         'label': 'Pending',
         'color': Colors.orange,
         'icon': Icons.hourglass_empty,
-        'msg': 'Your library clearance is pending',
+        'msg': 'Your lab clearance is pending',
       };
   }
 }
 
-// ---- MAIN PAGE ----
-class LibraryClearancePage extends StatefulWidget {
-  const LibraryClearancePage({Key? key}) : super(key: key);
+class LabClearancePage extends StatefulWidget {
+  const LabClearancePage({Key? key}) : super(key: key);
 
   @override
-  State<LibraryClearancePage> createState() => _LibraryClearancePageState();
+  State<LabClearancePage> createState() => _LabClearancePageState();
 }
 
-class _LibraryClearancePageState extends State<LibraryClearancePage> {
-  late LibraryController ctrl;
+class _LabClearancePageState extends State<LabClearancePage> {
+  late LabController ctrl;
 
   @override
   void initState() {
     super.initState();
-    ctrl = Get.put(LibraryController(), tag: 'library');
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    ctrl = Get.put(LabController(), tag: 'lab');
   }
 
   @override
@@ -136,13 +136,13 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
         );
       }
 
-      // --- PROGRESS LOGIC: NO DESIGN CHANGE ---
-      final isLibraryApproved = ctrl.status.value == 'Approved';
-      final isLibraryRejected = ctrl.status.value == 'Rejected';
-      final progress = isLibraryApproved ? 0.4 : 0.2;
+      final isLabApproved = ctrl.status.value == 'Approved';
+      final isLabRejected = ctrl.status.value == 'Rejected';
+      final isLabIncomplete = ctrl.status.value == 'Incomplete';
+      final progress = isLabApproved ? 0.6 : 0.4; // 60% after lab, 40% after library
       final percentLabel = (progress * 100).round();
 
-      final statusMap = libraryStatusLabel(ctrl.status.value);
+      final statusMap = labStatusLabel(ctrl.status.value);
       final statusColor = statusMap['color'] as Color;
       final statusIcon = statusMap['icon'] as IconData;
       final statusMsg = statusMap['msg'] as String;
@@ -150,8 +150,8 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
 
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CurvedAppBar(title: 'Library Clearance Status'),
-        bottomNavigationBar: const _BottomNav(),
+        appBar: const CurvedAppBar(title: 'Group Clearance Status'),
+        bottomNavigationBar: const _BottomNav(), // <-- Added here
         body: Column(
           children: [
             Expanded(
@@ -162,7 +162,7 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                   children: [
                     // Header
                     Text(
-                      'Library Clearance Status',
+                      'Lab Clearance Status',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
@@ -186,7 +186,7 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(color: _navy, shape: BoxShape.circle),
-                              child: const Icon(Icons.local_library, color: Colors.white, size: 24),
+                              child: const Icon(Icons.science, color: Colors.white, size: 24),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -194,7 +194,7 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Library',
+                                    'Lab',
                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _navy),
                                   ),
                                   const SizedBox(height: 4),
@@ -218,7 +218,7 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                     ),
                     const SizedBox(height: 62),
 
-                    // Status message (remarks for rejection)
+                    // Status message
                     Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(
@@ -238,8 +238,8 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                               const SizedBox(width: 8),
                               Flexible(
                                 child: Text(
-                                  isLibraryRejected && ctrl.remarks.value.isNotEmpty
-                                      ? ctrl.remarks.value
+                                  (isLabRejected || isLabIncomplete) && ctrl.issues.value.isNotEmpty
+                                      ? ctrl.issues.value
                                       : statusMsg,
                                   style: const TextStyle(
                                     fontSize: 13,
@@ -336,8 +336,8 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
               child: ElevatedButton(
-                onPressed: isLibraryApproved
-                    ? () => Get.offAllNamed('/lab') // Go to next step!
+                onPressed: isLabApproved
+                    ? () => Get.offAllNamed('/finance') // Go to next step!
                     : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),
@@ -347,11 +347,11 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(
-                  'PROCEED LAB CLEARANCE',
+                  'PROCEED INDIVIDUAL CLEARANCE',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: isLibraryApproved ? Colors.white : Colors.black38,
+                    color: isLabApproved ? Colors.white : Colors.black38,
                   ),
                 ),
               ),
@@ -363,13 +363,13 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
   }
 }
 
-// ---- Bottom Navigation ----
+// ---- Bottom Navigation (copied, matches your other screens) ----
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: 1,
+      currentIndex: 1, // Status tab
       selectedItemColor: _navy,
       unselectedItemColor: Colors.black.withOpacity(0.5),
       type: BottomNavigationBarType.fixed,
