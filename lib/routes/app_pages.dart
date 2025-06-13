@@ -14,6 +14,8 @@ import '../modules/name_correction/views/name_correction_screen.dart';
 import '../modules/appointments/views/appointment_screen.dart';
 import '../modules/libraryclearance/view/library_clearance_page.dart'; // Or your real path!
 import '../modules/labclearance/view/lab_clearance_page.dart';
+import '../modules/finance/view/finance_clearance_page.dart';
+
 
 
 
@@ -42,8 +44,13 @@ class AppPages {
     GetPage(name: AppRoutes.nameCorrection, page: () => const NameCorrectionScreen()),
     GetPage(name: AppRoutes.appointment, page: () => const AppointmentScreen()),
     GetPage(name: AppRoutes.libraryClearance, page: () =>  LibraryClearancePage()), // ADD THIS
-      GetPage(name: AppRoutes.LabClearancePage,page: () => LabClearancePage()),
+    GetPage(name: AppRoutes.LabClearancePage,page: () => LabClearancePage()),
+     GetPage(
+  name: '/finance-clearance',
+  page: () => FinanceClearancePage(),
+),
 
+  
 
 
   ];

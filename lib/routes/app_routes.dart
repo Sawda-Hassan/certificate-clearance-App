@@ -14,6 +14,8 @@ class AppRoutes {
   static const appointment = '/appointment';
   static const libraryClearance = '/library-clearance'; // 🟢 ADD THIS
 static const LabClearancePage = '/lab'; // 🟢 ADD THIS
+static const financeClearance = '/finance-clearance'; // ADD THIS
+
 
   
 

@@ -335,9 +335,10 @@ class _LabClearancePageState extends State<LabClearancePage> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
+              
               child: ElevatedButton(
                 onPressed: isLabApproved
-                    ? () => Get.offAllNamed('/finance') // Go to next step!
+                    ? () => Get.offAllNamed('/finance-clearance') // Go to next step!
                     : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),

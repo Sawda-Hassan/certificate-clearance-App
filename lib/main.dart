@@ -10,7 +10,6 @@ import 'package:clearance_app/modules/auth/controllers/auth_controller.dart';
 
 void main() async{
   await GetStorage.init();
-
   runApp(const ClearanceApp());
     Get.put(AuthController()); // 🟦 Register it here before runApp
 
