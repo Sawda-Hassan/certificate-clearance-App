@@ -1,3 +1,5 @@
+// 📁 lib/controller/auth_controller.dart
+
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../services/auth_service.dart';
@@ -5,12 +7,18 @@ import '../models/student_model.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
+  final box = GetStorage();
 
-  final box = GetStorage(); // ✅ Storage for token + studentId
   Rxn<StudentModel> loggedInStudent = Rxn<StudentModel>();
   RxString token = ''.obs;
 
-  /// Login student using ID and password
+  /// ✅ Get student ID
+  String get studentId => loggedInStudent.value?.studentId ?? '';
+
+  /// ✅ Get auth token
+  String get authToken => token.value;
+
+  /// ✅ Login logic
   Future<bool> login(String studentId, String password) async {
     final result = await _authService.login(studentId, password);
 
@@ -19,9 +27,8 @@ class AuthController extends GetxController {
       loggedInStudent.value = student;
       token.value = result['token'];
 
-      // ✅ Save both token and studentId to device storage
       box.write('token', result['token']);
-      box.write('studentId', student.studentId); // 👈 Important for finance status
+      box.write('studentId', student.studentId);
 
       print('✅ Logged in student JWT: ${result['token']}');
       print('📦 Stored studentId: ${student.studentId}');
@@ -33,15 +40,28 @@ class AuthController extends GetxController {
     return false;
   }
 
-  /// Get current token
-  String get authToken => token.value;
+  /// ✅ Load session
+  void loadFromStorage() {
+    final storedToken = box.read('token');
+    final storedStudentId = box.read('studentId');
 
-  /// Logout and clear session
+    if (storedToken != null && storedStudentId != null) {
+      token.value = storedToken;
+      loggedInStudent.value = StudentModel(
+        studentId: storedStudentId,
+        fullName: 'Unknown',
+        gender: 'Unknown',
+      );
+      print('📦 Loaded session from storage');
+    }
+  }
+
+  /// ✅ Logout
   void logout() {
     token.value = '';
     loggedInStudent.value = null;
     box.remove('token');
-    box.remove('studentId'); // 👈 Also clear student ID
-    print('👋 Logged out and cleared storage');
+    box.remove('studentId');
+    print('👋 Logged out and cleared session');
   }
 }

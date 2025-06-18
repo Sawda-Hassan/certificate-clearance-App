@@ -15,6 +15,8 @@ import '../modules/appointments/views/appointment_screen.dart';
 import '../modules/libraryclearance/view/library_clearance_page.dart'; // Or your real path!
 import '../modules/labclearance/view/lab_clearance_page.dart';
 import '../modules/finance/view/finance_clearance_page.dart';
+import '../modules/Evcpayment/views/paymentscreen.dart';
+
 
 
 
@@ -48,6 +50,11 @@ class AppPages {
      GetPage(
   name: '/finance-clearance',
   page: () => FinanceClearancePage(),
+),
+
+GetPage(
+  name: AppRoutes.financePayment,
+  page: () => const Paymentscreen(), // ✅ Match class name exactly
 ),
 
   

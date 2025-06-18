@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/finance_controller.dart';
+import '../../../routes/app_routes.dart';
+
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
@@ -154,7 +156,8 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
           ),
           const SizedBox(height: 6),
           ElevatedButton(
-            onPressed: () => Get.toNamed('/finance-payment'),
+            onPressed: () => Get.toNamed(AppRoutes.financePayment),
+          
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
