@@ -1,167 +1,205 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import '../../../constants/colors.dart';
+import 'package:get/get.dart';
+import '../controller/name_controller.dart';
+import '../../../routes/app_routes.dart';
 
-class NameCorrectionScreen extends StatefulWidget {
-  const NameCorrectionScreen({super.key});
+const _navy = Color(0xFF0A2647);
+const _lightBlue = Color(0xFFE8F3FF);
+
+// Curved AppBar with back arrow
+class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  const CurvedAppBar({super.key, required this.title});
 
   @override
-  State<NameCorrectionScreen> createState() => _NameCorrectionScreenState();
-}
-
-class _NameCorrectionScreenState extends State<NameCorrectionScreen> {
-  final currentName = "Ali Mahamed Ahmed";
-  final TextEditingController correctedNameController = TextEditingController();
-  File? selectedDocument;
-
-  Future<void> pickDocument() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() {
-        selectedDocument = File(picked.path);
-      });
-    }
-  }
-
-  void submitCorrection() {
-    if (correctedNameController.text.isEmpty || selectedDocument == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter corrected name and upload a document"),
-        ),
-      );
-      return;
-    }
-
-    // Simulate submission
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Name correction request submitted successfully"),
-      ),
-    );
-  }
+  Size get preferredSize => const Size.fromHeight(130);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        title: const Text("Name Correction"),
-        centerTitle: true,
+    return ClipPath(
+      clipper: _AppBarWaveClipper(),
+      child: Container(
+        height: preferredSize.height,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF022A42), Color(0xFF2E1B61)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 16,
+            right: 16,
+          ),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Get.back(),
+                ),
+              ),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
-            Row(
+    );
+  }
+}
+
+class _AppBarWaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) => Path()
+    ..lineTo(0, size.height * .75)
+    ..quadraticBezierTo(size.width * .25, size.height, size.width * .5, size.height * .9)
+    ..quadraticBezierTo(size.width * .75, size.height * .8, size.width, size.height * .9)
+    ..lineTo(size.width, 0)
+    ..close();
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+// Name Verification Page
+class NameVerificationPage extends StatelessWidget {
+  const NameVerificationPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = Get.put(NameController());
+
+    return Scaffold(
+      appBar: const CurvedAppBar(title: 'Name Verification'),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Obx(() {
+          if (ctrl.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Current Name:",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  'Is your name displayed correctly on the certificate?',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _lightBlue,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Text(
-                    currentName,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Enter Corrected Name",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: correctedNameController,
-              decoration: InputDecoration(
-                hintText: "Corrected Full Name",
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Upload Legal Document",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: pickDocument,
-              child: Container(
-                width: double.infinity,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: selectedDocument == null
-                      ? const Text(
-                          "Tap to upload file (e.g., Passport, Certificate)",
-                        )
-                      : Text(
-                          "Selected: ${selectedDocument!.path.split('/').last}",
-                        ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade100,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.shade600),
-              ),
-              child: Row(
-                children: const [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: Colors.amber,
-                    size: 28,
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "⚠️ You can only correct your name once for free. Future changes will require a processing fee.",
-                      style: TextStyle(color: Colors.black87),
+                    ctrl.student.value?.fullName ?? 'Loading...',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: _navy,
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: submitCorrection,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                ),
+                const SizedBox(height: 28),
+                const Text(
+                  'Would you like to change your name?',
+                  style: TextStyle(fontSize: 15),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    // YES button
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () async {
+  await ctrl.setCorrectionRequested(true);
+
+  if (ctrl.correctionRequested.value == true) {
+    Get.toNamed(AppRoutes.nameUpload); // ✅ safe
+
+  }
+},
+
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                              color: ctrl.correctionRequested.value == true ? _navy : Colors.grey),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          'Yes',
+                          style: TextStyle(
+                            color: _navy,
+                            fontWeight: ctrl.correctionRequested.value == true
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // NO button
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => ctrl.setCorrectionRequested(false),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                              color: ctrl.correctionRequested.value == false ? _navy : Colors.grey),
+                          backgroundColor: ctrl.correctionRequested.value == false
+                              ? _navy
+                              : Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          'No',
+                          style: TextStyle(
+                            color: ctrl.correctionRequested.value == false ? Colors.white : _navy,
+                            fontWeight: ctrl.correctionRequested.value == false
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                if (ctrl.correctionRequested.value == false)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: ctrl.requestCertificate,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _navy,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Request certificate',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  "Submit Correction",
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        }),
       ),
     );
   }

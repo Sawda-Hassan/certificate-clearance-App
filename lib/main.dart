@@ -43,6 +43,13 @@ class ClearanceApp extends StatelessWidget {
           ),
         ),
       ),
+       unknownRoute: GetPage(
+    name: '/not-found',
+    page: () => Scaffold(
+      appBar: AppBar(title: const Text('Page Not Found')),
+      body: const Center(child: Text('🚫 404 - Route not found')),
+    ),
+  ),
     );
   }
 }

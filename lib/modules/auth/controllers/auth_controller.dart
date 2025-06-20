@@ -29,7 +29,11 @@ class AuthController extends GetxController {
 
       box.write('token', result['token']);
       box.write('studentId', student.studentId);
+      box.write('token', result['token']);
+      box.write('id', student.id); // ✅ Add this line to store MongoDB _id
 
+      print('📡 Full student object: ${result['student']}');
+   
       print('✅ Logged in student JWT: ${result['token']}');
       print('📦 Stored studentId: ${student.studentId}');
 
@@ -50,6 +54,7 @@ class AuthController extends GetxController {
       loggedInStudent.value = StudentModel(
         studentId: storedStudentId,
         fullName: 'Unknown',
+        id:'unknown',
         gender: 'Unknown',
       );
       print('📦 Loaded session from storage');

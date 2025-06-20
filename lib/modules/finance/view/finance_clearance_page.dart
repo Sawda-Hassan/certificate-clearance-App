@@ -238,7 +238,9 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
               child: ElevatedButton(
-                onPressed: isCleared ? () => Get.offAllNamed('/exam') : null,
+                onPressed: (isCleared ?? false)
+        ? () => Get.offAllNamed(AppRoutes.examClearance)
+        : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),
                   backgroundColor: isCleared ? _navy : Colors.grey.shade400,
