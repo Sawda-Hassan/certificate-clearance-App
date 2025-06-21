@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/lab_controller.dart';
+import 'dart:async';
 
-// Colors
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
@@ -55,9 +55,7 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
                 alignment: Alignment.topLeft,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Get.back();
-                  },
+                  onPressed: () => Get.back(),
                 ),
               ),
               Text(
@@ -76,7 +74,6 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-// Status label builder
 Map<String, dynamic> labStatusLabel(String status) {
   switch (status) {
     case 'Approved':
@@ -120,11 +117,31 @@ class LabClearancePage extends StatefulWidget {
 
 class _LabClearancePageState extends State<LabClearancePage> {
   late LabController ctrl;
+  Timer? _refreshTimer;
+  bool _didAutoRefresh = false;
 
   @override
   void initState() {
     super.initState();
     ctrl = Get.put(LabController(), tag: 'lab');
+
+    ctrl.connectSocket(ctrl.groupId ?? 'default-group');
+
+    ever<String>(ctrl.status, (status) async {
+      if (!_didAutoRefresh && status == 'Pending') {
+        _refreshTimer?.cancel();
+        _refreshTimer = Timer(const Duration(seconds: 5), () async {
+          await ctrl.loadStatus();
+          _didAutoRefresh = true;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -139,7 +156,7 @@ class _LabClearancePageState extends State<LabClearancePage> {
       final isLabApproved = ctrl.status.value == 'Approved';
       final isLabRejected = ctrl.status.value == 'Rejected';
       final isLabIncomplete = ctrl.status.value == 'Incomplete';
-      final progress = isLabApproved ? 0.6 : 0.4; // 60% after lab, 40% after library
+      final progress = isLabApproved ? 0.6 : 0.4;
       final percentLabel = (progress * 100).round();
 
       final statusMap = labStatusLabel(ctrl.status.value);
@@ -151,7 +168,7 @@ class _LabClearancePageState extends State<LabClearancePage> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: const CurvedAppBar(title: 'Group Clearance Status'),
-        bottomNavigationBar: const _BottomNav(), // <-- Added here
+        bottomNavigationBar: const _BottomNav(),
         body: Column(
           children: [
             Expanded(
@@ -160,7 +177,6 @@ class _LabClearancePageState extends State<LabClearancePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Header
                     Text(
                       'Lab Clearance Status',
                       textAlign: TextAlign.center,
@@ -171,8 +187,6 @@ class _LabClearancePageState extends State<LabClearancePage> {
                       ),
                     ),
                     const SizedBox(height: 48),
-
-                    // Status card
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -197,7 +211,6 @@ class _LabClearancePageState extends State<LabClearancePage> {
                                     'Lab',
                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _navy),
                                   ),
-                                  const SizedBox(height: 4),
                                 ],
                               ),
                             ),
@@ -217,8 +230,6 @@ class _LabClearancePageState extends State<LabClearancePage> {
                       ),
                     ),
                     const SizedBox(height: 62),
-
-                    // Status message
                     Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(
@@ -255,8 +266,6 @@ class _LabClearancePageState extends State<LabClearancePage> {
                       ),
                     ),
                     const SizedBox(height: 80),
-
-                    // Progress label
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0, bottom: 15.0),
                       child: Text(
@@ -269,8 +278,6 @@ class _LabClearancePageState extends State<LabClearancePage> {
                         ),
                       ),
                     ),
-
-                    // Progress section
                     Padding(
                       padding: const EdgeInsets.only(bottom: 0),
                       child: Column(
@@ -335,10 +342,9 @@ class _LabClearancePageState extends State<LabClearancePage> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
-              
               child: ElevatedButton(
                 onPressed: isLabApproved
-                    ? () => Get.offAllNamed('/finance-clearance') // Go to next step!
+                    ? () => Get.offAllNamed('/finance-clearance')
                     : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),
@@ -364,13 +370,13 @@ class _LabClearancePageState extends State<LabClearancePage> {
   }
 }
 
-// ---- Bottom Navigation (copied, matches your other screens) ----
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
+
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: 1, // Status tab
+      currentIndex: 1,
       selectedItemColor: _navy,
       unselectedItemColor: Colors.black.withOpacity(0.5),
       type: BottomNavigationBarType.fixed,

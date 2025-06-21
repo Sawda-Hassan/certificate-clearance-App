@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../service/finance_service.dart';
 
 class FinanceController extends GetxController {
@@ -10,47 +11,61 @@ class FinanceController extends GetxController {
   final unpaidAmount = 0.0.obs;
   final canGraduate = false.obs;
 
+  IO.Socket? socket;
   final box = GetStorage();
 
   @override
   void onInit() {
     super.onInit();
-
-    // ✅ Try to read studentId from GetStorage
     final sid = box.read('studentId');
     if (sid != null && sid.toString().isNotEmpty) {
-      print('📦 Found studentId in storage: $sid');
       loadStatus(sid.toString());
+      connectSocket(sid.toString()); // ✅ connect when you have studentId
     } else {
-      print('❌ No studentId found in storage');
-
-      // ✅ OPTIONAL: fallback for manual testing
-      const fallbackId = '123456'; // Replace with a test student ID
-      print('⚠️ Using fallback studentId: $fallbackId');
-      loadStatus(fallbackId);
+      print('❌ No studentId in storage');
     }
   }
-Future<void> loadStatus(String studentId) async {
-  isLoading.value = true;
-  try {
-    final res = await _svc.fetchFinanceSummary(studentId);
 
-    // ✅ Fix: properly parse string or number
-    final rawAmount = res['unpaidAmount'];
-    unpaidAmount.value = double.tryParse(rawAmount.toString()) ?? 0.0;
+  void connectSocket(String studentId) {
+    socket?.disconnect(); // clean up any old connection
+    socket = IO.io('http://10.0.2.2:5000', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': true,
+    });
 
-    canGraduate.value = res['canGraduate'] ?? false;
+    socket!.onConnect((_) {
+      print('[SOCKET] Connected for Finance');
+    });
 
-    status.value = unpaidAmount.value <= 0.001 ? 'Cleared' : 'Pending';
+    socket!.on('financeStatusChanged', (data) {
+      if (data is Map && data['studentId'] == studentId) {
+        print("📥 Received financeStatusChanged for me");
+        loadStatus(studentId); // 🔁 reload status
+      }
+    });
 
-    print('✅ Loaded finance status');
-    print('   ➤ Student ID: $studentId');
-    print('   ➤ Unpaid Amount (parsed): \$${unpaidAmount.value}');
-    print('   ➤ Clearance Status: ${status.value}');
-  } catch (e) {
-    print('❌ Error loading finance status: $e');
-  } finally {
-    isLoading.value = false;
+    socket!.onDisconnect((_) => print('[SOCKET] Disconnected from Finance'));
   }
-}
+
+  Future<void> loadStatus(String studentId) async {
+    try {
+      isLoading.value = true;
+      final res = await _svc.fetchFinanceSummary(studentId);
+      unpaidAmount.value = double.tryParse(res['unpaidAmount'].toString()) ?? 0.0;
+      canGraduate.value = res['canGraduate'] ?? false;
+      status.value = unpaidAmount.value <= 0.001 ? 'Cleared' : 'Pending';
+
+      print('✅ Finance status updated: $status, unpaid: ${unpaidAmount.value}');
+    } catch (e) {
+      print('❌ Failed to load finance summary: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  @override
+  void onClose() {
+    socket?.disconnect();
+    super.onClose();
+  }
 }
