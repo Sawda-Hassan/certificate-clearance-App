@@ -81,7 +81,7 @@ class NameVerificationPage extends StatelessWidget {
     final ctrl = Get.put(NameController());
 
     return Scaffold(
-      appBar: const CurvedAppBar(title: 'Name Verification'),
+      appBar: const CurvedAppBar(title: 'Name Correction'),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Obx(() {
@@ -98,10 +98,10 @@ class NameVerificationPage extends StatelessWidget {
                   'Is your name displayed correctly on the certificate?',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 40),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: _lightBlue,
                     borderRadius: BorderRadius.circular(10),
@@ -115,7 +115,7 @@ class NameVerificationPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 88),
                 const Text(
                   'Would you like to change your name?',
                   style: TextStyle(fontSize: 15),
@@ -127,17 +127,15 @@ class NameVerificationPage extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () async {
-  await ctrl.setCorrectionRequested(true);
-
-  if (ctrl.correctionRequested.value == true) {
-    Get.toNamed(AppRoutes.nameUpload); // ✅ safe
-
-  }
-},
-
+                          await ctrl.setCorrectionRequested(true);
+                          if (ctrl.correctionRequested.value == true) {
+                            Get.toNamed(AppRoutes.nameUpload);
+                          }
+                        },
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                              color: ctrl.correctionRequested.value == true ? _navy : Colors.grey),
+                            color: ctrl.correctionRequested.value == true ? _navy : Colors.grey,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         child: Text(
@@ -158,7 +156,8 @@ class NameVerificationPage extends StatelessWidget {
                         onPressed: () => ctrl.setCorrectionRequested(false),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                              color: ctrl.correctionRequested.value == false ? _navy : Colors.grey),
+                            color: ctrl.correctionRequested.value == false ? _navy : Colors.grey,
+                          ),
                           backgroundColor: ctrl.correctionRequested.value == false
                               ? _navy
                               : Colors.transparent,
@@ -177,25 +176,35 @@ class NameVerificationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 32),
-                if (ctrl.correctionRequested.value == false)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: ctrl.requestCertificate,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _navy,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Request certificate',
-                        style: TextStyle(fontSize: 16),
+                const SizedBox(height: 133),
+
+                // Request Certificate Button - only enabled if correctionRequested == false
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: ctrl.correctionRequested.value == false
+    ? () async {
+        await ctrl.requestCertificate();
+        Get.toNamed(AppRoutes.appointment); // Navigate anyway
+      }
+    : null,
+
+               
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ctrl.correctionRequested.value == false
+                          ? _navy
+                          : Colors.grey.shade400,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+                    child: const Text(
+                      'Request certificate',
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
+                ),
               ],
             ),
           );

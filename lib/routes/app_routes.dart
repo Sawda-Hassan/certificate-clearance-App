@@ -10,13 +10,14 @@ class AppRoutes {
   static const clearanceStatus = '/group-clearance-status';
   static const individualClearance = '/individual-clearance';
   static const nameCorrection = '/name-correction';
-  static const appointment = '/appointment';
   static const libraryClearance = '/library-clearance'; // 🟢 ADD THIS
 static const LabClearancePage = '/lab'; // 🟢 ADD THIS
 static const financeClearance = '/finance-clearance'; // ADD THIS
 static const financePayment = '/finance-payment';
 static const examClearance = '/exam-clearance';
   static const nameUpload = '/name-upload';
+ static const appointment = '/appointment';
+  static const clearanceLetter = '/clearance-letter';
 
 
 
