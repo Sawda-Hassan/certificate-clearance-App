@@ -5,9 +5,9 @@ class LibraryService {
 
   Future<Map<String, dynamic>> fetchLibraryStatus() async {
     try {
-      print('[SERVICE] Calling /library/my-group ...');
+     // print('[SERVICE] Calling /library/my-group ...');
       final raw = await _api.get('/library/my-group');
-      print('[SERVICE] API raw response: $raw');
+      //print('[SERVICE] API raw response: $raw');
       final data = raw['data'];
       if (data != null && data['ok'] == true) {
         return {
@@ -21,7 +21,7 @@ class LibraryService {
         };
       }
     } catch (e) {
-      print('[SERVICE] Error: $e');
+      //print('[SERVICE] Error: $e');
       return {
         'status': 'Error',
         'remarks': '',

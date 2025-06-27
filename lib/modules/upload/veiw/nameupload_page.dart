@@ -4,7 +4,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../controlerr/nameupload_controller.dart';
 
 const _navy = Color(0xFF0A2647);
-const _lightBlue = Color(0xFFE8F3FF);
+//const _lightBlue = Color(0xFFE8F3FF);
 
 class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

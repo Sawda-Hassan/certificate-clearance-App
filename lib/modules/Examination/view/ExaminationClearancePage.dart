@@ -4,6 +4,12 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/examination_controller.dart';
 import '../../../routes/app_routes.dart';
+import '../../finance/view/finance_clearance_page.dart';
+import '../../FacultyClearancepage/FacultyClearancePage.dart';
+import '../../clearancestatus/service/clearance_service.dart';
+import '../../labclearance/view/lab_clearance_page.dart';
+import '../../libraryclearance/view/library_clearance_page.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
@@ -38,22 +44,15 @@ Map<String, dynamic> examStatusLabel(String status) {
 }
 
 // ---- Curved AppBar ----
-class _AppBarWaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) => Path()
-    ..lineTo(0, size.height * .75)
-    ..quadraticBezierTo(size.width * .25, size.height, size.width * .5, size.height * .9)
-    ..quadraticBezierTo(size.width * .75, size.height * .8, size.width, size.height * .9)
-    ..lineTo(size.width, 0)
-    ..close();
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
 class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const CurvedAppBar({Key? key, required this.title}) : super(key: key);
+  final bool backToFinance;
+
+  const CurvedAppBar({
+    Key? key,
+    required this.title,
+    this.backToFinance = false,
+  }) : super(key: key);
 
   @override
   Size get preferredSize => const Size.fromHeight(130);
@@ -84,7 +83,13 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
                 alignment: Alignment.topLeft,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Get.back(),
+                  onPressed: () {
+                    if (backToFinance) {
+                      Get.off(() => const FinanceClearancePage());
+                    } else {
+                      Get.back();
+                    }
+                  },
                 ),
               ),
               Text(
@@ -101,6 +106,19 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
+}
+
+class _AppBarWaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) => Path()
+    ..lineTo(0, size.height * .75)
+    ..quadraticBezierTo(size.width * .25, size.height, size.width * .5, size.height * .9)
+    ..quadraticBezierTo(size.width * .75, size.height * .8, size.width, size.height * .9)
+    ..lineTo(size.width, 0)
+    ..close();
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 // ---- Main Page ----
@@ -130,7 +148,7 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
 
       final isApproved = ctrl.status.value == 'Approved';
       final isRejected = ctrl.status.value == 'Rejected';
-      final progress = isApproved ? 1.0 : 0.8; // ✅ 100% if approved, else 80%
+      final progress = isApproved ? 1.0 : 0.8;
       final percentLabel = (progress * 100).round();
 
       final statusMap = examStatusLabel(ctrl.status.value);
@@ -141,8 +159,8 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
 
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CurvedAppBar(title: 'Individual Clearance Status'),
-        bottomNavigationBar: const _BottomNav(),
+        appBar: const CurvedAppBar(title: 'Individual Clearance Status', backToFinance: true),
+        bottomNavigationBar: const BottomNav(),
         body: Column(
           children: [
             Expanded(
@@ -161,8 +179,6 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
                       ),
                     ),
                     const SizedBox(height: 48),
-
-                    // Status Card
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -201,8 +217,6 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
                       ),
                     ),
                     const SizedBox(height: 60),
-
-                    // Status Message
                     Center(
                       child: Container(
                         decoration: BoxDecoration(
@@ -230,8 +244,10 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
                       ),
                     ),
                     const SizedBox(height: 80),
-
-                    const Text('Progress...', style: TextStyle(color: _navy, fontSize: 17, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Progress...',
+                      style: TextStyle(color: _navy, fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 10),
                     Stack(
                       clipBehavior: Clip.none,
@@ -279,29 +295,26 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
                 ),
               ),
             ),
-
-           Padding(
-  padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
-  child: ElevatedButton(
-    onPressed: isApproved ? () => Get.toNamed(AppRoutes.nameCorrection) : null,
-
-    style: ElevatedButton.styleFrom(
-      minimumSize: const Size.fromHeight(60),
-      backgroundColor: isApproved ? _navy : Colors.grey.shade400, // ✅ Set color conditionally
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-    child: Text(
-      'PROCEED NAME CORRECTION',
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: isApproved ? Colors.white : Colors.black38, // ✅ Text style depends on approval
-      ),
-    ),
-  ),
-),
-
+            Padding(
+              padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
+              child: ElevatedButton(
+                onPressed: isApproved ? () => Get.toNamed(AppRoutes.nameCorrection) : null,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(60),
+                  backgroundColor: isApproved ? _navy : Colors.grey.shade400,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'PROCEED NAME CORRECTION',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isApproved ? Colors.white : Colors.black38,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -309,11 +322,15 @@ class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
   }
 }
 
+// ---- Bottom Navigation ----class BottomNav extends StatelessWidget {
 // ---- Bottom Navigation ----
-class _BottomNav extends StatelessWidget {
-  const _BottomNav();
+class BottomNav extends StatelessWidget {
+  const BottomNav({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+
     return BottomNavigationBar(
       currentIndex: 1,
       selectedItemColor: _navy,
@@ -325,16 +342,52 @@ class _BottomNav extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
       ],
-      onTap: (index) {
+      onTap: (index) async {
         switch (index) {
           case 0:
-            Get.offAllNamed('/student-welcome');
+            Get.offAllNamed(AppRoutes.studentWelcome);
             break;
+
+          case 1:
+            final studentId = authController.loggedInStudent.value?.id;
+            if (studentId == null) {
+              Get.snackbar("Error", "Student not logged in");
+              return;
+            }
+
+            final nextStep = await ClearanceService.getCurrentClearanceStatus(studentId);
+            if (nextStep == null) {
+              Get.snackbar("✅ Done", "You’ve completed all clearance steps");
+              return;
+            }
+
+            switch (nextStep) {
+              case 'faculty':
+                Get.to(() => const FacultyClearancePage());
+                break;
+              case 'library':
+                Get.to(() => const LibraryClearancePage());
+                break;
+              case 'lab':
+                Get.to(() => const LabClearancePage());
+                break;
+              case 'finance':
+                Get.to(() => const FinanceClearancePage());
+                break;
+              case 'examination':
+                Get.to(() => const ExaminationClearancePage());
+                break;
+              default:
+                Get.snackbar("Error", "Unknown clearance stage: $nextStep");
+            }
+            break;
+
           case 2:
             Get.snackbar('Coming soon', 'Notification screen not implemented');
             break;
+
           case 3:
-            Get.snackbar('Coming soon', 'Profile screen not implemented');
+            Get.offAllNamed(AppRoutes.profile);
             break;
         }
       },

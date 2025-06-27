@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:clearance_app/modules/home/views/home_screen.dart';
-import 'package:clearance_app/modules/notifications/views/notification_screen.dart';
-import 'package:clearance_app/modules/profile/views/profile_screen.dart';
 import 'package:clearance_app/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -21,8 +19,6 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    NotificationScreen(),
-    ProfileScreen(),
   ];
 
   @override

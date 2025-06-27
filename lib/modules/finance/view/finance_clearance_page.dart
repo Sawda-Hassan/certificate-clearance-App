@@ -4,12 +4,12 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/finance_controller.dart';
 import '../../../routes/app_routes.dart';
-
+import '../../labclearance/view/lab_clearance_page.dart';
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
-const _orange = Color(0xFFFF9800);
+//const _orange = Color(0xFFFF9800);
 
 class FinanceClearancePage extends StatefulWidget {
   const FinanceClearancePage({Key? key}) : super(key: key);
@@ -28,8 +28,9 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
     final sid = ctrl.box.read('studentId');
     if (sid != null && sid.toString().isNotEmpty) {
       ctrl.loadStatus(sid);
+      ctrl.connectSocket(sid); // ✅ Connect socket for real-time updates
     } else {
-      print('❌ No studentId in storage');
+     // print('❌ No studentId in storage');
     }
   }
 
@@ -49,7 +50,7 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
 
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CurvedAppBar(title: 'individual Clearance Status'),
+        appBar: const CurvedAppBar(title: 'Individual Clearance Status', backToLab: true),
         bottomNavigationBar: const _BottomNav(),
         body: Column(
           children: [
@@ -107,77 +108,74 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
 
                     const SizedBox(height: 24),
 
-                    // 🔥 NEW PAYMENT WARNING CARD
-    if (!isCleared)
-  Padding(
-    padding: const EdgeInsets.only(top: 4.0),
-    child: Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 62),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F3FF),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
-            decoration: const BoxDecoration(
-              color: _navy,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-            ),
-            child: Center(
-              child: CircleAvatar(
-                backgroundColor: Colors.white,
-                radius: 14, // 🔽 smaller
-                child: Icon(Icons.warning_amber_rounded, size: 18, color: Colors.orange.shade700),
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'lacag baa laguu leeyahay ${unpaid.toStringAsFixed(3)}',
-            style: const TextStyle(
-              color: _navy,
-              fontWeight: FontWeight.bold,
-              fontSize: 11.5, // 🔽 smaller font
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'would like to pay !',
-            style: TextStyle(
-              color: _navy,
-              fontWeight: FontWeight.w600,
-              fontSize: 10.5, // 🔽 smaller font
-            ),
-          ),
-          const SizedBox(height: 6),
-          ElevatedButton(
-            onPressed: () => Get.toNamed(AppRoutes.financePayment),
-          
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // 🔽 tighter
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text('PAY', style: TextStyle(fontSize: 12)), // 🔽 smaller
-          ),
-          const SizedBox(height: 10),
-        ],
-      ),
-    ),
-  ),
-
-
+                    // Payment Warning Card
+                    if (!isCleared)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.symmetric(horizontal: 62),
+                          decoration: BoxDecoration(
+                            color: _lightBlue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                                decoration: const BoxDecoration(
+                                  color: _navy,
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                                ),
+                                child: Center(
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    radius: 14,
+                                    child: Icon(Icons.warning_amber_rounded,
+                                        size: 18, color: Colors.orange.shade700),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'lacag baa laguu leeyahay ${unpaid.toStringAsFixed(3)}',
+                                style: const TextStyle(
+                                  color: _navy,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'would like to pay !',
+                                style: TextStyle(
+                                  color: _navy,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              ElevatedButton(
+                                onPressed: () => Get.toNamed(AppRoutes.financePayment),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                child: const Text('PAY', style: TextStyle(fontSize: 12)),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        ),
+                      ),
 
                     const SizedBox(height: 30),
-
                     const Padding(
                       padding: EdgeInsets.only(left: 8.0, bottom: 15.0),
                       child: Text(
@@ -234,13 +232,10 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                 ),
               ),
             ),
-            
             Padding(
               padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
               child: ElevatedButton(
-                onPressed: (isCleared ?? false)
-        ? () => Get.offAllNamed(AppRoutes.examClearance)
-        : null,
+                onPressed: isCleared ? () => Get.offAllNamed(AppRoutes.examClearance) : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),
                   backgroundColor: isCleared ? _navy : Colors.grey.shade400,
@@ -250,7 +245,9 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                 child: Text(
                   'PROCEED EXAM CLEARANCE',
                   style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600, color: isCleared ? Colors.white : Colors.black38),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isCleared ? Colors.white : Colors.black38),
                 ),
               ),
             ),
@@ -263,7 +260,8 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
 
 class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const CurvedAppBar({Key? key, required this.title}) : super(key: key);
+  final bool backToLab;
+  const CurvedAppBar({Key? key, required this.title, this.backToLab = false}) : super(key: key);
 
   @override
   Size get preferredSize => const Size.fromHeight(130);
@@ -290,7 +288,13 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
                 alignment: Alignment.topLeft,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Get.back(),
+                  onPressed: () {
+                    if (backToLab) {
+                      Get.off(() => const LabClearancePage());
+                    } else {
+                      Get.back();
+                    }
+                  },
                 ),
               ),
               Text(title,

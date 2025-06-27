@@ -47,6 +47,13 @@ dependencies:
   get_storage: ^2.1.1
   socket_io_client: ^2.0.3
   file_picker: ^10.2.0
+  pdf: ^3.10.4
+  printing: ^5.12.0
+  logger: ^2.0.2
+
+
+
+
 
 
 
@@ -99,6 +106,10 @@ flutter:
     - assets/images/boy_profile.png
     - assets/images/girl_profile.png
     - assets/images/evcplus_logo.png
+    - assets/images/chatbot_icon.png
+    - assets/images/chatbot_icon1.png
+
+
 
 
 

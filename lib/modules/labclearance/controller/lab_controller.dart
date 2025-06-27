@@ -46,13 +46,13 @@ class LabController extends GetxController {
         issues.value = data['issues'] ?? '';
         expectedItems.value = List<String>.from(data['expectedItems'] ?? []);
         returnedItems.value = List<String>.from(data['returnedItems'] ?? []);
-        print('[SOCKET][labStatusChanged] Updated status: ${status.value}');
+        //print('[SOCKET][labStatusChanged] Updated status: ${status.value}');
       }
     });
   }
 
   void _handleLabStatusChanged(dynamic data) {
-    print('[SOCKET] Received labStatusChanged: $data');
+   // print('[SOCKET] Received labStatusChanged: $data');
     status.value = data['status'] ?? '';
     issues.value = data['issues'] ?? '';
   }
@@ -66,9 +66,9 @@ class LabController extends GetxController {
 
   Future<void> loadStatus() async {
     isLoading.value = true;
-    print('[API] Loading lab status...');
+    //print('[API] Loading lab status...');
     final res = await _svc.fetchLabStatus();
-    print('[API] Received: $res');
+    //print('[API] Received: $res');
     if (res['status'] == 'Approved' || res['status'] == 'Pending' || res['status'] == 'Rejected') {
       lab = LabModel.fromJson(res);
       expectedItems.value = lab?.expectedItems ?? [];

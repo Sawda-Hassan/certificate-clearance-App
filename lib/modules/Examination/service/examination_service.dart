@@ -12,7 +12,7 @@ class ExaminationService {
     final studentId = box.read('studentId');
 
     if (token == null || studentId == null) {
-      print('❌ Token or Student ID missing from storage');
+      //print('❌ Token or Student ID missing from storage');
       return null;
     }
 
@@ -30,11 +30,11 @@ class ExaminationService {
         final jsonData = jsonDecode(response.body);
         return EligibilityModel.fromJson(jsonData);
       } else {
-        print('❌ Failed to load examination status: ${response.statusCode}');
+        //print('❌ Failed to load examination status: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('❌ Exception in ExaminationService: $e');
+      //print('❌ Exception in ExaminationService: $e');
       return null;
     }
   }

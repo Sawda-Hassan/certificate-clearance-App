@@ -16,9 +16,10 @@ class AppointmentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final studentId = auth.loggedInStudent.value?.id ?? '';
+    // ✅ Correct studentId field used here
+    final studentId = auth.loggedInStudent.value?.studentId ?? '';
 
-    // Load appointment on build
+    // Load appointment
     ctrl.loadAppointment(studentId);
 
     return Scaffold(
@@ -112,15 +113,15 @@ class AppointmentPage extends StatelessWidget {
                 ),
 
                 const Spacer(),
+                const SizedBox(height: 2),
 
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                        onPressed: () async {
-      await ctrl.checkIn(studentId); // confirm appointment (no need to pass data)
-      Get.toNamed(AppRoutes.clearanceLetter); // safer
-
-    },
+                    onPressed: () async {
+                      await ctrl.checkIn(studentId);
+                      Get.toNamed(AppRoutes.clearanceLetter);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _navy,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -129,8 +130,8 @@ class AppointmentPage extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'Confirm',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      'Proceed clearance letter',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
                     ),
                   ),
                 ),

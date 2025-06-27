@@ -15,7 +15,7 @@ class SocketService {
       },
     );
     // Debug prints for connection status
-    socket.onConnect((_) => print('[SOCKET] Connected!'));
+    socket.onConnect((_) => ('[SOCKET] Connected!'));
     socket.onConnectError((e) => print('[SOCKET] Connect error: $e'));
     socket.onError((e) => print('[SOCKET] General error: $e'));
     socket.onDisconnect((_) => print('[SOCKET] Disconnected!'));

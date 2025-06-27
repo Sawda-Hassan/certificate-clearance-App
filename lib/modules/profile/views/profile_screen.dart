@@ -1,130 +1,265 @@
 import 'package:flutter/material.dart';
-import 'package:clearance_app/providers/notification_provider.dart';
-import 'package:clearance_app/constants/colors.dart';
+import 'package:get/get.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../routes/app_routes.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final AuthController authController = Get.isRegistered<AuthController>()
+      ? Get.find<AuthController>()
+      : Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Profile"),
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        backgroundColor: AppColors.primary,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage(
-                      "assets/images/avatar1.png",
-                    ), // Replace with student profile pic or placeholder
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    "Mohamed Hassan Adam",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
+      backgroundColor: Colors.white,
+      bottomNavigationBar: const _BottomNav(),
+      body: SafeArea(
+        child: Obx(() {
+          final student = authController.loggedInStudent.value;
+          if (student == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            Row(
+          final ImageProvider profileImage = (student.profilePicture.isNotEmpty)
+              ? NetworkImage(student.profilePicture)
+              : AssetImage(
+                  student.gender.toLowerCase() == 'female'
+                      ? 'assets/images/girl_profile.png'
+                      : 'assets/images/boy_profile.png',
+                ) as ImageProvider;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: const [
-                        Text(
-                          "C1211320",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                const SizedBox(height: 10),
+
+                // 🧑‍🎓 Header with Profile + Dots
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 30),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Profile',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            height: 130,
+                            width: double.infinity,
+                            child: CustomPaint(painter: DotBackgroundPainter()),
                           ),
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: profileImage,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        student.fullName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black,
                         ),
-                        SizedBox(height: 6),
-                        Text(
-                          "Student ID",
-                          style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 🔹 ID & Phone
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _infoCard("📘 ${student.studentId}", "StudentId", _navy),
+
+                    _infoCard("📱 ${student.phone}", "Phone", Colors.orange),
+                  ],
+                ),
+
+                const SizedBox(height: 25),
+
+                // 🔹 Class, Year, Status
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _infoLabel("Class", student.studentClass),
+                    _infoLabel("Graduation", student.yearOfGraduation.toString()),
+                    _infoLabel("Status", student.status),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                // 🚪 Styled Logout Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        authController.logout();
+                        Get.offAllNamed('/login');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0A1E49), // Deep navy
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30), // pill shape
                         ),
-                      ],
+                        elevation: 2,
+                      ),
+                      child: const Text(
+                        "Logout",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: const [
-                        Text(
-                          "12349694",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text("Hemis ID", style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
+
+                // 📚 Academic Info
+                const Divider(),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Academic Information",
+                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                 ),
+                const SizedBox(height: 8),
+                _textRow("Mode", student.mode),
+                _textRow("Year of Admission", student.yearOfAdmission.toString()),
+                _textRow("Duration", "${student.duration} years"),
+
+                const SizedBox(height: 20),
+
+                // 👤 Personal Info
+                const Divider(),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Personal Information",
+                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 8),
+                _textRow("Gender", student.gender),
+                _textRow("Mother's Name", student.motherName),
+                _textRow("Email", student.email),
               ],
             ),
-            const SizedBox(height: 20),
-
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  Text(
-                    "Class: CA212",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "Semester: 8",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "Status: Active",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        }),
       ),
+    );
+  }
+
+  Widget _infoCard(String value, String label, Color color) {
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        children: [
+          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoLabel(String label, String value) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 6),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _textRow(String label, String value) {
+    return Row(
+      children: [
+        Text("$label: ", style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(value),
+      ],
+    );
+  }
+}
+
+// 🎨 Dot background painter
+class DotBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint blue = Paint()..color = const Color(0xFF1E3A8A);
+    final Paint yellow = Paint()..color = const Color(0xFFFFC107);
+    const radius = 5.0;
+
+    final dots = [
+      Offset(size.width * 0.15, 35),
+      Offset(size.width * 0.25, 55),
+      Offset(size.width * 0.35, 80),
+      Offset(size.width * 0.15, 115),
+      Offset(size.width * 0.85, 35),
+      Offset(size.width * 0.75, 55),
+      Offset(size.width * 0.65, 80),
+      Offset(size.width * 0.85, 115),
+    ];
+
+    for (int i = 0; i < dots.length; i++) {
+      canvas.drawCircle(dots[i], radius, i.isOdd ? yellow : blue);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ---- Custom Bottom Navigation ----
+const Color _navy = Color(0xFF0A1E49); // Deep navy color
+
+class _BottomNav extends StatelessWidget {
+  const _BottomNav();
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      currentIndex: 3,
+      selectedItemColor: _navy,
+      unselectedItemColor: Colors.black.withOpacity(0.5),
+      type: BottomNavigationBarType.fixed,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
+        BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+      ],
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            Get.offAllNamed(AppRoutes.studentWelcome);
+            break;
+          case 1:
+             Get.snackbar('Coming soon', 'Notification screen not implemented');
+
+            break;
+          case 2:
+            Get.snackbar('Coming soon', 'Notification screen not implemented');
+            break;
+          case 3:
+            Get.offAllNamed(AppRoutes.profile); // already here
+            break;
+        }
+      },
     );
   }
 }

@@ -8,22 +8,22 @@ class NameService {
   static Future<StudentModel?> getStudentById(String id) async {
     try {
       final url = Uri.parse('$baseUrl/$id');
-      print('📡 Fetching student profile from: $url');
+      //print('📡 Fetching student profile from: $url');
 
       final response = await http.get(url);
 
-      print('📥 Response status: ${response.statusCode}');
-      print('📥 Response body: ${response.body}');
+      //print('📥 Response status: ${response.statusCode}');
+      //print('📥 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         return StudentModel.fromJson(jsonData);
       } else {
-        print('❌ Failed to fetch student. Status: ${response.statusCode}');
+        //print('❌ Failed to fetch student. Status: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('❌ Exception in getStudentById: $e');
+     // print('❌ Exception in getStudentById: $e');
       return null;
     }
   }
@@ -33,7 +33,7 @@ class NameService {
       final url = Uri.parse('$baseUrl/request-name-correction-toggle');
       final body = jsonEncode({'studentId': id, 'requested': requested});
 
-      print('📡 Toggling name correction: $body');
+      //print('📡 Toggling name correction: $body');
 
       final response = await http.post(
         url,
@@ -41,10 +41,10 @@ class NameService {
         body: body,
       );
 
-      print('📥 Toggle response: ${response.statusCode} → ${response.body}');
+      //print('📥 Toggle response: ${response.statusCode} → ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
-      print('❌ Exception in toggleNameCorrection: $e');
+      //print('❌ Exception in toggleNameCorrection: $e');
       return false;
     }
   }

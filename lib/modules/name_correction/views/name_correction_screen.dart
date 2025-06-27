@@ -200,7 +200,7 @@ class NameVerificationPage extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'Request certificate',
+                      'VEIW Appoinnment',
                       style: TextStyle(fontSize: 16),
                     ),
                   ),

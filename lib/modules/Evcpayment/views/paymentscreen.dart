@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/payment_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../../routes/app_routes.dart'; // ✅ Make sure this is correct
 
 class Paymentscreen extends StatefulWidget {
   const Paymentscreen({super.key});
@@ -16,6 +17,48 @@ class _PaymentscreenState extends State<Paymentscreen> {
   final TextEditingController _phoneController = TextEditingController();
   final PaymentController _paymentController = Get.put(PaymentController());
   final AuthController _authController = Get.find<AuthController>();
+
+  void showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, size: 80, color: Colors.green),
+            const SizedBox(height: 16),
+            const Text(
+              "Payment Successful 🎉",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "You have successfully paid the payment.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Get.offAllNamed(AppRoutes.financeClearance); // Navigate to finance status
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: const Text("Back to Finance Status"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 
   void _handlePayment() async {
     if (!_formKey.currentState!.validate()) return;
@@ -41,12 +84,12 @@ class _PaymentscreenState extends State<Paymentscreen> {
       if (_paymentController.isPaymentSuccessful.value) {
         _phoneController.clear();
         _amountController.clear();
+        showSuccessDialog();
       }
     } catch (e) {
       _paymentController.errorMessage.value = "Payment failed. Please try again.";
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +124,6 @@ class _PaymentscreenState extends State<Paymentscreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Phone Input
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text("Enter EVC Plus Number:",
@@ -115,7 +157,6 @@ class _PaymentscreenState extends State<Paymentscreen> {
 
                   const SizedBox(height: 20),
 
-                  // Amount Input
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text("Enter Amount (USD):",
@@ -148,7 +189,6 @@ class _PaymentscreenState extends State<Paymentscreen> {
 
                   const SizedBox(height: 40),
 
-                  // Pay Button
                   _paymentController.isLoading.value
                       ? const CircularProgressIndicator()
                       : SizedBox(
@@ -173,20 +213,6 @@ class _PaymentscreenState extends State<Paymentscreen> {
 
                   const SizedBox(height: 20),
 
-                  // Success or inline error (✅ only inline, ❌ no snackbar)
-                  if (_paymentController.isPaymentSuccessful.value)
-                    Row(
-                      children: const [
-                        Icon(Icons.check_circle, color: Colors.green),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            "Payment successful, student finance cleared",
-                            style: TextStyle(color: Colors.green),
-                          ),
-                        ),
-                      ],
-                    ),
                   if (_paymentController.errorMessage.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),

@@ -21,7 +21,7 @@ class LibraryController extends GetxController {
   }
 
   void _handleLibraryStatusChanged(dynamic data) {
-    print('[SOCKET] Received libraryStatusChanged: $data');
+    //print('[SOCKET] Received libraryStatusChanged: $data');
     status.value = data['status'] ?? '';
     remarks.value = data['remarks'] ?? '';
   }
@@ -34,9 +34,9 @@ class LibraryController extends GetxController {
 
   Future<void> loadStatus() async {
     isLoading.value = true;
-    print('[API] Loading library status...');
+    //print('[API] Loading library status...');
     final res = await _svc.fetchLibraryStatus();
-    print('[API] Received: $res');
+    //print('[API] Received: $res');
     if (res['status'] == 'Approved') {
       library = LibraryModel.fromJson(res);
     }

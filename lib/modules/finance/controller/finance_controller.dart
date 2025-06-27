@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../service/finance_service.dart';
+import 'package:logger/logger.dart';
+
 
 class FinanceController extends GetxController {
   final FinanceService _svc = FinanceService();
@@ -10,6 +12,8 @@ class FinanceController extends GetxController {
   final status = ''.obs;
   final unpaidAmount = 0.0.obs;
   final canGraduate = false.obs;
+  final logger = Logger();
+
 
   IO.Socket? socket;
   final box = GetStorage();
@@ -22,7 +26,7 @@ class FinanceController extends GetxController {
       loadStatus(sid.toString());
       connectSocket(sid.toString()); // ✅ connect when you have studentId
     } else {
-      print('❌ No studentId in storage');
+     // print('❌ No studentId in storage');
     }
   }
 
@@ -34,17 +38,18 @@ class FinanceController extends GetxController {
     });
 
     socket!.onConnect((_) {
-      print('[SOCKET] Connected for Finance');
+      //print('[SOCKET] Connected for Finance');
     });
 
     socket!.on('financeStatusChanged', (data) {
       if (data is Map && data['studentId'] == studentId) {
-        print("📥 Received financeStatusChanged for me");
+       // print("📥 Received financeStatusChanged for me");
         loadStatus(studentId); // 🔁 reload status
       }
     });
 
-    socket!.onDisconnect((_) => print('[SOCKET] Disconnected from Finance'));
+    socket!.onDisconnect((_) => logger.d('[SOCKET] Disconnected from Finance')
+    );
   }
 
   Future<void> loadStatus(String studentId) async {
@@ -55,9 +60,9 @@ class FinanceController extends GetxController {
       canGraduate.value = res['canGraduate'] ?? false;
       status.value = unpaidAmount.value <= 0.001 ? 'Cleared' : 'Pending';
 
-      print('✅ Finance status updated: $status, unpaid: ${unpaidAmount.value}');
+      //print('✅ Finance status updated: $status, unpaid: ${unpaidAmount.value}');
     } catch (e) {
-      print('❌ Failed to load finance summary: $e');
+      //print('❌ Failed to load finance summary: $e');
     } finally {
       isLoading.value = false;
     }

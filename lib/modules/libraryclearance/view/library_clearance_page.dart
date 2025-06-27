@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/library_controller.dart';
+import '../../FacultyClearancepage/FacultyClearancePage.dart';
 
 // ---- Color palette ----
 const _navy = Color(0xFF0A2647);
@@ -52,15 +53,15 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Stack(
             alignment: Alignment.topCenter,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Get.back();
-                  },
-                ),
-              ),
+           Align(
+  alignment: Alignment.topLeft,
+  child: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () {
+      Get.off(() => const FacultyClearancePage());
+    },
+  ),
+),
               Text(
                 title,
                 style: const TextStyle(

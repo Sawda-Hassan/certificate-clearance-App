@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+//import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../model/nameupload_model.dart';
 

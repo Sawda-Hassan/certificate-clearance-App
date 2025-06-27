@@ -47,7 +47,7 @@ Future<void> pay({
       errorMessage.value = 'Payment failed. Please try again.';
     }
   } catch (e) {
-    print('❌ Payment exception: $e');
+    //print('❌ Payment exception: $e');
     errorMessage.value = 'Payment failed. Please try again.';
   } finally {
     isLoading.value = false;

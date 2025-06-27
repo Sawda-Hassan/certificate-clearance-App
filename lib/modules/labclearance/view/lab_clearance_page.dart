@@ -1,3 +1,4 @@
+import 'package:clearance_app/modules/libraryclearance/view/library_clearance_page.dart';
 import 'package:flutter/material.dart' hide StepState;
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -51,13 +52,15 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Stack(
             alignment: Alignment.topCenter,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Get.back(),
-                ),
-              ),
+             Align(
+  alignment: Alignment.topLeft,
+  child: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () {
+      Get.off(() => const LibraryClearancePage());
+    },
+  ),
+),
               Text(
                 title,
                 style: const TextStyle(

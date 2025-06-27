@@ -14,25 +14,25 @@ class ApiClient {
     Map<String, dynamic>? body,
   }) async {
     final url = '$_base$path';
-    print('🔗 [ApiClient] POST → $url');
+    //print('🔗 [ApiClient] POST → $url');
     final res = await http.post(
       Uri.parse(url),
       headers: _headers(),
       body: jsonEncode(body ?? {}),
     );
-    print('⬅️ [ApiClient] POST $url ← status ${res.statusCode}');
+    //print('⬅️ [ApiClient] POST $url ← status ${res.statusCode}');
     return _wrap(res);
   }
 
   /* ---------------------------- GET --------------------------- */
   Future<Map<String, dynamic>> get(String path) async {
     final url = '$_base$path';
-    print('🔗 [ApiClient] GET → $url');
+    //print('🔗 [ApiClient] GET → $url');
     final res = await http.get(
       Uri.parse(url),
       headers: _headers(),
     );
-    print('⬅️ [ApiClient] GET $url ← status ${res.statusCode}');
+    //print('⬅️ [ApiClient] GET $url ← status ${res.statusCode}');
     return _wrap(res);
   }
 
@@ -40,9 +40,9 @@ class ApiClient {
   Map<String, String> _headers() {
     final tokenValue = _box.read('token') ?? '';
     if (tokenValue.isEmpty) {
-      print('⚠️ [ApiClient] WARNING: token is EMPTY');
+      //print('⚠️ [ApiClient] WARNING: token is EMPTY');
     } else {
-      print('🔑 [ApiClient] sending token: ${tokenValue.toString().substring(0, 20)}...');
+      //print('🔑 [ApiClient] sending token: ${tokenValue.toString().substring(0, 20)}...');
     }
 
     return {
@@ -60,7 +60,7 @@ class ApiClient {
       try {
         data = jsonDecode(res.body);
       } catch (e) {
-        print('❌ [ApiClient] Failed to decode JSON: $e');
+        //print('❌ [ApiClient] Failed to decode JSON: $e');
         data = null;
       }
     }

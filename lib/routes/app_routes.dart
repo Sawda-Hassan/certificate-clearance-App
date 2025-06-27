@@ -1,4 +1,4 @@
-import 'package:clearance_app/modules/name_correction/views/name_correction_screen.dart';
+//import 'package:clearance_app/modules/name_correction/views/name_correction_screen.dart';
 class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';
@@ -6,7 +6,6 @@ class AppRoutes {
   static const welcome = '/welcome';
   static const status = '/status';
   static const profile = '/profile';
-  static const notification = '/notification';
   static const clearanceStatus = '/group-clearance-status';
   static const individualClearance = '/individual-clearance';
   static const nameCorrection = '/name-correction';
@@ -18,6 +17,9 @@ static const examClearance = '/exam-clearance';
   static const nameUpload = '/name-upload';
  static const appointment = '/appointment';
   static const clearanceLetter = '/clearance-letter';
+  static const String nameCorrectionNotAllowed = '/name-correction-not-allowed';
+    static const studentWelcome = '/student-welcome';
+
 
 
 

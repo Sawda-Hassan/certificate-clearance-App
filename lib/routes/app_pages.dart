@@ -7,7 +7,6 @@ import '../modules/home/views/status_screen.dart';
 import '../modules/profile/views/profile_screen.dart';
 import '../modules/auth/views/login_screen.dart';
 import '../modules/welcomeScreen/views/studentwelcomescreen.dart';
-import '../modules/notifications/views/notification_screen.dart';
 import '../modules/libraryclearance/view/library_clearance_page.dart';
 import '../modules/labclearance/view/lab_clearance_page.dart';
 import '../modules/finance/view/finance_clearance_page.dart';
@@ -17,6 +16,8 @@ import '../modules/name_correction/views/name_correction_screen.dart';
 import '../modules/upload/veiw/nameupload_page.dart';
 import '../modules/appointments/views/appointment_page.dart';
 import '../modules/clearnceletter/view/clearanceletter_page.dart';
+import '../modules/name_correction_not_allowed/veiw/name_correction_not_allowed.dart';
+
 
 
 
@@ -39,8 +40,8 @@ class AppPages {
     ),
 
     GetPage(name: AppRoutes.status, page: () => const status_screen()),
-    GetPage(name: AppRoutes.profile, page: () => const ProfileScreen()),
-    GetPage(name: AppRoutes.notification, page: () => const NotificationScreen()),
+    GetPage(name: AppRoutes.profile, page: () =>  ProfileScreen()),
+
     GetPage(name: AppRoutes.libraryClearance, page: () => LibraryClearancePage()),
     GetPage(name: AppRoutes.LabClearancePage, page: () => LabClearancePage()),
     GetPage(name: AppRoutes.financeClearance, page: () => FinanceClearancePage()),
@@ -67,6 +68,21 @@ GetPage(
   page: () => ClearanceLetterPage(),
 ),
 
+ GetPage(
+    name: AppRoutes.nameCorrectionNotAllowed,
+    page: () => const NameCorrectionNotAllowedPage(),
+  ),
+     GetPage(
+  name: AppRoutes.studentWelcome,
+  page: () => const StudentWelcomeScreen(
+    studentName: 'Student',
+    gender: 'male',
+  ),
+),
+
+
   ];
+  
+  
   
 }

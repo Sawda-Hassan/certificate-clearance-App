@@ -3,7 +3,6 @@ import '../../auth/services/api_client.dart';
 class FacultyService {
   final ApiClient _api = ApiClient();
 
-  // 🟢 Fetch status AND rejection reason!
   Future<Map<String, dynamic>> fetchFacultyStatus() async {
     try {
       final raw = await _api.get('/faculty/my-group');
@@ -14,16 +13,10 @@ class FacultyService {
           'rejectionReason': data['rejectionReason'] ?? '',
         };
       } else {
-        return {
-          'status': 'NotStarted',
-          'rejectionReason': '',
-        };
+        return {'status': 'NotStarted', 'rejectionReason': ''};
       }
-    } catch (e) {
-      return {
-        'status': 'Error',
-        'rejectionReason': '',
-      };
+    } catch (_) {
+      return {'status': 'Error', 'rejectionReason': ''};
     }
   }
 
@@ -32,10 +25,7 @@ class FacultyService {
       final result = await _api.post('/faculty/start-clearance');
       return result;
     } catch (e) {
-      return {
-        'ok': false,
-        'data': {'message': e.toString()}
-      };
+      return {'ok': false, 'data': {'message': e.toString()}};
     }
   }
 }

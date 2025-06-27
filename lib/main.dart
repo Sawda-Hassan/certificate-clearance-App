@@ -6,14 +6,17 @@ import 'constants/colors.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 import 'package:clearance_app/modules/auth/controllers/auth_controller.dart';
-
-
-void main() async{
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-  runApp(const ClearanceApp());
-    Get.put(AuthController()); // 🟦 Register it here before runApp
 
+  final auth = Get.put(AuthController());        // ✅ Register controller
+  await auth.loadFromStorage();                 // ✅ Load saved session (including student ID)
+
+  runApp(const ClearanceApp());
 }
+
+
 
 
 class ClearanceApp extends StatelessWidget {

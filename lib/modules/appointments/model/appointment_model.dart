@@ -20,14 +20,20 @@ class AppointmentModel {
   });
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
+    //print("🧩 Parsing AppointmentModel: $json"); // Debug
+
     return AppointmentModel(
       id: json['_id'],
-      studentId: json['studentId'] is String ? json['studentId'] : json['studentId']['_id'],
+      studentId: json['studentId'] is String
+          ? json['studentId']
+          : json['studentId']['_id'],
       appointmentDate: DateTime.parse(json['appointmentDate']),
       rescheduled: json['rescheduled'] ?? false,
       rescheduleReason: json['rescheduleReason'],
       checkedIn: json['checkedIn'] ?? false,
-      attendedAt: json['attendedAt'] != null ? DateTime.parse(json['attendedAt']) : null,
+      attendedAt: json['attendedAt'] != null
+          ? DateTime.parse(json['attendedAt'])
+          : null,
       status: json['status'] ?? 'pending',
     );
   }
