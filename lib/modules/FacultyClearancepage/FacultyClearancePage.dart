@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide StepState;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -79,10 +79,10 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
+                        const Text(
                           'Faculty Clearance Status',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: _navy,
@@ -235,13 +235,20 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
               ],
             ),
           ),
-          const ChatbotFloatingButton(), // ✅ Floating button injected here
+
+          // ✅ Floating chatbot icon bottom-right
+          const Positioned(
+            bottom: 20,
+            right: 20,
+            child: ChatbotFloatingButton(),
+          ),
         ],
       );
     });
   }
 }
 
+// Curved AppBar Widget
 class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   const CurvedAppBar({super.key, required this.title});
