@@ -50,6 +50,16 @@ dependencies:
   pdf: ^3.10.4
   printing: ^5.12.0
   logger: ^2.0.2
+  flutter_local_notifications: ^17.1.0 
+  audioplayers: ^5.2.1 # ✅ Use the latest stable version
+
+
+
+  
+
+
+  
+
 
 
 
@@ -108,6 +118,8 @@ flutter:
     - assets/images/evcplus_logo.png
     - assets/images/chatbot_icon.png
     - assets/images/chatbot_icon1.png
+    - assets/images/ca.png
+
 
 
 

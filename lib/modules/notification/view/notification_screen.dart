@@ -1,29 +1,67 @@
-/*mport '../controller/notification_controller.dart';
+/*import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import '../controller/notification_controller.dart';
+import './notification_tile.dart';
 
-class NotificationPage extends StatelessWidget {
-  final ctrl = Get.put(NotificationController());
+class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
+
+  @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  final controller = Get.put(NotificationController());
+  final String studentId = '123456'; // Replace with real login id
+
+  @override
+  void initState() {
+    super.initState();
+    _setupFCM();
+    controller.loadNotifications(studentId);
+  }
+
+  void _setupFCM() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    await messaging.requestPermission();
+    String? token = await messaging.getToken();
+    print('🔑 FCM Token: $token');
+
+    FirebaseMessaging.onMessage.listen((message) {
+      controller.loadNotifications(studentId);
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(message.notification?.title ?? 'New Message'),
+          content: Text(message.notification?.body ?? ''),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))
+          ],
+        ),
+      );
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      controller.loadNotifications(studentId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Notifications")),
+      appBar: AppBar(title: const Text('Notifications')),
       body: Obx(() {
-        if (ctrl.isLoading.value) return Center(child: CircularProgressIndicator());
-        if (ctrl.notifications.isEmpty) return Center(child: Text("No notifications"));
-
+        if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
+        if (controller.notifications.isEmpty) return Center(child: Text('No notifications.'));
         return ListView.builder(
-          itemCount: ctrl.notifications.length,
+          itemCount: controller.notifications.length,
           itemBuilder: (context, index) {
-            final note = ctrl.notifications[index];
-            return ListTile(
-              title: Text(note.message),
-              subtitle: Text(note.type),
-              trailing: note.isRead
-                  ? Icon(Icons.check, color: Colors.green)
-                  : TextButton(
-                      onPressed: () => ctrl.markAsRead(note.id),
-                      child: Text("Mark as read"),
-                    ),
+            final note = controller.notifications[index];
+            return NotificationTile(
+              notification: note,
+              onTap: () => controller.markAsRead(note.id),
             );
           },
         );

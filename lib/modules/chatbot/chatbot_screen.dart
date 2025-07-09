@@ -18,11 +18,13 @@ class ChatbotScreen extends StatelessWidget {
         children: [
           Expanded(
             child: Obx(() => ListView.builder(
+                  controller: controller.scrollController, // ✅ Attach scroll
                   reverse: false,
                   padding: const EdgeInsets.all(8),
                   itemCount: controller.messages.length,
                   itemBuilder: (context, index) {
                     final message = controller.messages[index];
+                    print('📲 Rendering message: ${message.message}');
                     return MessageBubble(message: message);
                   },
                 )),

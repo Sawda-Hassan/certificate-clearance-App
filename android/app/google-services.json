@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "765124783925",
+    "project_id": "notification-fc192",
+    "storage_bucket": "notification-fc192.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765124783925:android:d643a8e8ab4120ce3c667c",
+        "android_client_info": {
+          "package_name": "com.example.clearance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAP-XfHSmmpateg-PIfhoHWyMbQwiImhM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

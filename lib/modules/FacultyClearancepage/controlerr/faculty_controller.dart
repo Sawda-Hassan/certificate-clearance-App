@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import '../service/faculty_service.dart';
-import '../model/faculty_models.dart'; // Make sure this has ClearanceStep + StepState
+import '../model/faculty_models.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../../socket_service.dart';
 
@@ -17,7 +17,14 @@ class FacultyController extends GetxController {
 
   List<ClearanceStep> buildSteps(String stat) {
     return [
-      ClearanceStep('Faculty', stat == 'Approved' ? StepState.approved : stat == 'Rejected' ? StepState.rejected : StepState.pending),
+      ClearanceStep(
+        'Faculty',
+        (stat == 'Approved')
+            ? StepState.approved
+            : (stat == 'Rejected' || stat == 'Incomplete')
+                ? StepState.rejected
+                : StepState.pending,
+      ),
       ClearanceStep('Library', StepState.pending),
       ClearanceStep('Lab', StepState.pending),
       ClearanceStep('Finance', StepState.pending),

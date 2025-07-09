@@ -17,6 +17,8 @@ import '../modules/upload/veiw/nameupload_page.dart';
 import '../modules/appointments/views/appointment_page.dart';
 import '../modules/clearnceletter/view/clearanceletter_page.dart';
 import '../modules/name_correction_not_allowed/veiw/name_correction_not_allowed.dart';
+import '../modules/chatbot/chatbot_screen.dart';
+
 
 
 
@@ -78,6 +80,10 @@ GetPage(
     studentName: 'Student',
     gender: 'male',
   ),
+),
+GetPage(
+  name: AppRoutes.chatbot,
+  page: () => ChatbotScreen(),
 ),
 
 
