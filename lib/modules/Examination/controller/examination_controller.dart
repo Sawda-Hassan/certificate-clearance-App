@@ -1,11 +1,11 @@
 import 'package:get/get.dart';
-//import '../model/examination_model.dart';
 import '../service/examination_service.dart';
 
 class ExaminationController extends GetxController {
   var isLoading = true.obs;
   var status = ''.obs;
   var remarks = ''.obs;
+  var failedCourses = <String>[].obs;
 
   @override
   void onInit() {
@@ -16,28 +16,35 @@ class ExaminationController extends GetxController {
   Future<void> fetchExaminationStatus() async {
     try {
       isLoading.value = true;
-    //  print('📡 Fetching examination status...');
-
       final data = await ExaminationService.getExaminationStatus();
 
       if (data != null) {
-       // print('✅ Response received:');
-        //print('   ➤ canProceed: ${data.canProceed}');
-        //print('   ➤ failedCourses: ${data.failedCourses}');
-        //print('   ➤ message: ${data.message}');
+        print('🎯 data.canProceed: ${data.canProceed}');
+        print('🎯 data.failedCourses: ${data.failedCourses}');
+        print('🎯 data.message: ${data.message}');
 
-        status.value = data.canProceed ? 'Approved' : 'Pending';
-        remarks.value = data.message;
-        //print('✅ Final computed status: ${status.value}');
+        failedCourses.value = data.failedCourses;
+        print('📋 Controller received failedCourses: ${failedCourses.value}');
+
+        if (failedCourses.isNotEmpty) {
+          status.value = 'Rejected';
+          remarks.value =
+              'You are not eligible for certificate collection. You failed ${failedCourses.join(", ")}.';
+        } else {
+          status.value = data.canProceed ? 'Approved' : 'Pending';
+          remarks.value = data.message ?? '';
+        }
       } else {
-        //print('⚠️ No data returned from backend (null model)');
+        print('⚠️ No data received from service.');
         status.value = 'Pending';
         remarks.value = '';
+        failedCourses.clear();
       }
     } catch (e) {
-      //print('❌ Exception during fetchExaminationStatus: $e');
+      print('❌ Exception in ExaminationController: $e');
       status.value = 'Pending';
       remarks.value = '';
+      failedCourses.clear();
     } finally {
       isLoading.value = false;
     }

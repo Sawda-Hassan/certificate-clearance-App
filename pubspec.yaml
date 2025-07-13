@@ -53,6 +53,7 @@ dependencies:
   flutter_local_notifications: ^19.3.0 
   audioplayers: ^5.2.1 # ✅ Use the latest stable version
   permission_handler: ^11.0.0
+  google_fonts: ^6.1.0
 
 
 
@@ -123,6 +124,8 @@ flutter:
     - assets/images/chatbot_icon.png
     - assets/images/chatbot_icon1.png
     - assets/images/ca.png
+    - assets/images/chat.png
+
 
 
 

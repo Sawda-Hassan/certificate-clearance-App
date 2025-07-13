@@ -4,18 +4,17 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/examination_controller.dart';
 import '../../../routes/app_routes.dart';
-import '../../finance/view/finance_clearance_page.dart';
-import '../../FacultyClearancepage/FacultyClearancePage.dart';
-import '../../clearancestatus/service/clearance_service.dart';
-import '../../labclearance/view/lab_clearance_page.dart';
-import '../../libraryclearance/view/library_clearance_page.dart';
-import '../../auth/controllers/auth_controller.dart';
+import '../../chatbot/chatbot_badge_controller.dart';
+import '../../chatbot/chatbot_screen.dart';
+import '../../../widgets/ClearanceStepper.dart';
+import '../../../widgets/curved_app_bar.dart';
+import '../../FacultyClearancepage/model/faculty_models.dart' as custom;
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
+const _orange = Colors.orange;
 
-// ---- Status Map ----
 Map<String, dynamic> examStatusLabel(String status) {
   switch (status) {
     case 'Approved':
@@ -23,374 +22,292 @@ Map<String, dynamic> examStatusLabel(String status) {
         'label': 'Cleared',
         'color': _green,
         'icon': Icons.verified,
-        'msg': 'Now You are eligible for certificate collection.',
+        'msg': 'Now you are eligible for certificate collection.',
       };
     case 'Rejected':
       return {
-        'label': 'Rejected',
-        'color': Colors.red,
-        'icon': Icons.cancel,
-        'msg': 'Your examination clearance was rejected',
+        'label': 'Pending', // Treat "Rejected" as Pending in UI
+        'color': _orange,
+        'icon': Icons.hourglass_empty,
+        'msg': 'You are almost there! Complete the remaining requirement.',
       };
-    case 'Pending':
     default:
       return {
         'label': 'Pending',
-        'color': Colors.orange,
+        'color': _orange,
         'icon': Icons.hourglass_empty,
-        'msg': 'Your examination clearance is pending',
+        'msg': 'Your examination clearance is pending.',
       };
   }
 }
 
-// ---- Curved AppBar ----
-class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final bool backToFinance;
+class ExaminationClearancePage extends StatelessWidget {
+  final ctrl = Get.put(ExaminationController(), tag: 'exam');
 
-  const CurvedAppBar({
-    Key? key,
-    required this.title,
-    this.backToFinance = false,
-  }) : super(key: key);
-
-  @override
-  Size get preferredSize => const Size.fromHeight(130);
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _AppBarWaveClipper(),
-      child: Container(
-        height: preferredSize.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF022A42), Color(0xFF2E1B61)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    if (backToFinance) {
-                      Get.off(() => const FinanceClearancePage());
-                    } else {
-                      Get.back();
-                    }
-                  },
-                ),
-              ),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AppBarWaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) => Path()
-    ..lineTo(0, size.height * .75)
-    ..quadraticBezierTo(size.width * .25, size.height, size.width * .5, size.height * .9)
-    ..quadraticBezierTo(size.width * .75, size.height * .8, size.width, size.height * .9)
-    ..lineTo(size.width, 0)
-    ..close();
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-// ---- Main Page ----
-class ExaminationClearancePage extends StatefulWidget {
-  const ExaminationClearancePage({Key? key}) : super(key: key);
-
-  @override
-  State<ExaminationClearancePage> createState() => _ExaminationClearancePageState();
-}
-
-class _ExaminationClearancePageState extends State<ExaminationClearancePage> {
-  late ExaminationController ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    ctrl = Get.put(ExaminationController(), tag: 'exam');
-    ctrl.fetchExaminationStatus();
-  }
+  ExaminationClearancePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       if (ctrl.isLoading.value) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
       }
 
-      final isApproved = ctrl.status.value == 'Approved';
-      final isRejected = ctrl.status.value == 'Rejected';
-      final progress = isApproved ? 1.0 : 0.8;
-      final percentLabel = (progress * 100).round();
+      final status = ctrl.status.value;
+      final failedCourses = ctrl.failedCourses;
+      final isApproved = status == 'Approved';
+      final hasFailedCourses = failedCourses.isNotEmpty;
 
-      final statusMap = examStatusLabel(ctrl.status.value);
+      final statusMap = examStatusLabel(status);
       final statusColor = statusMap['color'];
       final statusIcon = statusMap['icon'];
       final statusLabel = statusMap['label'];
-      final statusMsg = statusMap['msg'];
+final statusMsg = hasFailedCourses
+    ? "You're almost there! Once you've successfully completed ${failedCourses.join(", ")}, you'll be eligible."
+    : 'Now you are eligible for certificate collection.';
+
+      final steps = [
+        custom.ClearanceStep('Faculty', custom.StepState.approved),
+        custom.ClearanceStep('Library', custom.StepState.approved),
+        custom.ClearanceStep('Lab', custom.StepState.approved),
+        custom.ClearanceStep('Finance', custom.StepState.approved),
+        custom.ClearanceStep(
+          'Examination',
+          isApproved ? custom.StepState.approved : custom.StepState.pending,
+        ),
+      ];
+
+      final completedSteps = isApproved ? 5 : 4;
+      final progress = completedSteps / 5;
+      final percentLabel = (progress * 100).round();
 
       return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: const CurvedAppBar(title: 'Individual Clearance Status', backToFinance: true),
+        backgroundColor: Colors.grey[100],
+        appBar: const CurvedAppBar(
+          title: 'Individual Clearance Status',
+          backToFinance: true,
+        ),
         bottomNavigationBar: const BottomNav(),
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Examination Clearance Status',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: _navy,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: Color.fromARGB(255, 216, 221, 233)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(color: _navy, shape: BoxShape.circle),
-                              child: const Icon(Icons.school, color: Colors.white, size: 24),
-                            ),
-                            const SizedBox(width: 16),
-                            const Expanded(
-                              child: Text(
-                                'Examination',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _navy),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                statusLabel,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 60),
-                    Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _lightBlue,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(statusIcon, color: statusColor, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              isRejected && ctrl.remarks.value.isNotEmpty
-                                  ? ctrl.remarks.value
-                                  : statusMsg,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: _navy,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 80),
-                    const Text(
-                      'Progress...',
-                      style: TextStyle(color: _navy, fontSize: 17, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 28),
-                          child: LinearPercentIndicator(
-                            lineHeight: 14,
-                            percent: progress,
-                            animation: true,
-                            barRadius: const Radius.circular(30),
-                            progressColor: statusColor,
-                            backgroundColor: Colors.grey.shade400,
-                          ),
-                        ),
-                        Positioned(
-                          right: 0,
-                          left: 220,
-                          top: -49,
-                          child: CircularPercentIndicator(
-                            radius: 20,
-                            lineWidth: 6,
-                            percent: progress,
-                            animation: true,
-                            progressColor: statusColor,
-                            backgroundColor: Colors.grey.shade300,
-                            center: Text(
-                              '$percentLabel%',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'Completed $percentLabel% of your certificate clearance',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-              ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ✅ Status Card
+             // ✅ Status Card
+Container(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+  margin: const EdgeInsets.only(bottom: 16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(color: const Color(0xFFE0E0E0)),
+  ),
+  child: Row(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(8),
+        decoration: const BoxDecoration(
+          color: _navy,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(Icons.school, color: Colors.white, size: 20), // ✅ Exam dept icon
+      ),
+      const SizedBox(width: 16),
+      const Expanded(
+        child: Text(
+          'Examination',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+            fontSize: 16,
+          ),
+        ),
+      ),
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+        decoration: BoxDecoration(
+          color: statusColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          statusLabel,
+          style: TextStyle(
+            color: statusColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
+
+              const SizedBox(height: 12),
+
+          // ✅ Message Box
+SizedBox(
+  child: Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: statusColor.withOpacity(0.05),
+      border: Border.all(color: statusColor),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      children: [
+        Icon(statusIcon, color: statusColor),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            statusMsg,
+            style: TextStyle(
+              color: const Color.fromARGB(255, 0, 0, 0), // 👈 clean and friendly tone
+              fontWeight: FontWeight.w500,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
-              child: ElevatedButton(
-                onPressed: isApproved ? () => Get.toNamed(AppRoutes.nameCorrection) : null,
+          ),
+        )
+      ],
+    ),
+  ),
+),
+
+              const SizedBox(height: 80),
+              ClearanceStepper(steps: steps, progress: progress),
+              const SizedBox(height: 60),
+
+              const Text(
+                'Progress',
+                style: TextStyle(
+                    color: _navy, fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 28),
+                    child: LinearPercentIndicator(
+                      lineHeight: 14,
+                      percent: progress,
+                      animation: true,
+                      barRadius: const Radius.circular(30),
+                      progressColor: statusColor,
+                      backgroundColor: Colors.grey.shade400,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    left: 220,
+                    top: -49,
+                    child: CircularPercentIndicator(
+                      radius: 20,
+                      lineWidth: 6,
+                      percent: progress,
+                      animation: true,
+                      progressColor: statusColor,
+                      backgroundColor: Colors.grey.shade300,
+                      center: Text(
+                        '$percentLabel%',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Completed $percentLabel% of your certificate clearance',
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 39),
+
+              ElevatedButton(
+                onPressed:
+                    isApproved ? () => Get.toNamed(AppRoutes.nameCorrection) : null,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(60),
-                  backgroundColor: isApproved ? _navy : Colors.grey.shade400,
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  minimumSize: const Size.fromHeight(70),
+                  backgroundColor: isApproved ? _navy : Colors.grey[300],
                 ),
                 child: Text(
                   'PROCEED NAME CORRECTION',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: isApproved ? Colors.white : Colors.black38,
+                    color: isApproved ? Colors.white : Colors.black45,
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
   }
 }
 
-// ---- Bottom Navigation ----class BottomNav extends StatelessWidget {
-// ---- Bottom Navigation ----
 class BottomNav extends StatelessWidget {
   const BottomNav({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authController = Get.find<AuthController>();
+    return Obx(() {
+      final unread = Get.find<ChatbotBadgeController>().unreadCount.value;
 
-    return BottomNavigationBar(
-      currentIndex: 1,
-      selectedItemColor: _navy,
-      unselectedItemColor: Colors.black.withOpacity(0.5),
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
-      ],
-      onTap: (index) async {
-        switch (index) {
-          case 0:
-            Get.offAllNamed(AppRoutes.studentWelcome);
-            break;
-
-          case 1:
-            final studentId = authController.loggedInStudent.value?.id;
-            if (studentId == null) {
-              Get.snackbar("Error", "Student not logged in");
-              return;
-            }
-
-            final nextStep = await ClearanceService.getCurrentClearanceStatus(studentId);
-            if (nextStep == null) {
-              Get.snackbar("✅ Done", "You’ve completed all clearance steps");
-              return;
-            }
-
-            switch (nextStep) {
-              case 'faculty':
-                Get.to(() => const FacultyClearancePage());
-                break;
-              case 'library':
-                Get.to(() => const LibraryClearancePage());
-                break;
-              case 'lab':
-                Get.to(() => const LabClearancePage());
-                break;
-              case 'finance':
-                Get.to(() => const FinanceClearancePage());
-                break;
-              case 'examination':
-                Get.to(() => const ExaminationClearancePage());
-                break;
-              default:
-                Get.snackbar("Error", "Unknown clearance stage: $nextStep");
-            }
-            break;
-
-          case 2:
-            Get.snackbar('Coming soon', 'Notification screen not implemented');
-            break;
-
-          case 3:
-            Get.offAllNamed(AppRoutes.profile);
-            break;
-        }
-      },
-    );
+      return BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: _navy,
+        unselectedItemColor: Colors.black.withOpacity(0.5),
+        type: BottomNavigationBarType.fixed,
+        items: [
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined), label: 'HOME'),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.assignment), label: 'Status'),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.notifications), label: 'Notification'),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Image.asset('assets/images/chat.png', width: 44, height: 44),
+                if (unread > 0)
+                  const Positioned(
+                    top: -2,
+                    right: -2,
+                    child: CircleAvatar(radius: 5, backgroundColor: Colors.red),
+                  ),
+              ],
+            ),
+            activeIcon:
+                Image.asset('assets/images/ca.png', width: 24, height: 24),
+            label: 'Chatbot',
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Get.offAllNamed('/student-welcome');
+              break;
+            case 3:
+              Get.offAllNamed(AppRoutes.profile);
+              break;
+            case 4:
+              Get.to(() => ChatbotScreen());
+              break;
+          }
+        },
+      );
+    });
   }
 }

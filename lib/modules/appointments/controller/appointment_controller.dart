@@ -7,18 +7,9 @@ class AppointmentController extends GetxController {
   var isLoading = false.obs;
 
   Future<void> loadAppointment(String studentId) async {
-    //print("📦 Loading appointment for: $studentId");
     isLoading.value = true;
-
     final data = await AppointmentService.fetchAppointmentByStudent(studentId);
     appointment.value = data;
-
-    if (data != null) {
-     // print("✅ Appointment loaded: ${data.id}");
-    } else {
-      //print("⚠️ No appointment returned.");
-    }
-
     isLoading.value = false;
   }
 

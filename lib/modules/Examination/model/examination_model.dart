@@ -1,6 +1,6 @@
 class EligibilityModel {
   final bool canProceed;
-  final bool failedCourses;
+  final List<String> failedCourses;
   final bool showNameCorrectionOption;
   final String message;
 
@@ -14,7 +14,7 @@ class EligibilityModel {
   factory EligibilityModel.fromJson(Map<String, dynamic> json) {
     return EligibilityModel(
       canProceed: json['canProceed'] ?? false,
-      failedCourses: json['failedCourses'] ?? false,
+      failedCourses: List<String>.from(json['failedCourses'] ?? []),
       showNameCorrectionOption: json['showNameCorrectionOption'] ?? false,
       message: json['message'] ?? '',
     );

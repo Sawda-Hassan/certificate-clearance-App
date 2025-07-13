@@ -23,26 +23,27 @@ class ClearanceLetterController extends GetxController {
     final studentId = auth.loggedInStudent.value?.studentId;
 
     if (studentId == null) {
-      //print('❌ No student logged in!');
+      print('❌ [ClearanceController] No student ID found.');
       Get.snackbar("Error", "Student not logged in.");
       isLoading.value = false;
       return;
     }
 
     try {
-      //print('🔄 Fetching clearance letter for studentId: $studentId');
+      print('🌐 [ClearanceController] Fetching clearance letter for: $studentId');
 
       final data = await ClearanceLetterService.fetchClearanceLetter(studentId);
 
-     // print('✅ Fetched student: ${data.student.name}');
-      //print('📅 Appointment: ${data.appointment.dateFormatted}');
-      //print('🕒 Time: ${data.appointment.timeRange}');
-      //print('📍 Location: ${data.appointment.location}');
+      print('✅ [ClearanceController] Clearance letter fetched:');
+      print('👤 Student: ${data.student.name}, ${data.student.studentId}');
+      print('📅 Appointment: ${data.appointment.dateFormatted}');
+      print('🕒 Time: ${data.appointment.timeRange}');
+      print('📍 Location: ${data.appointment.location}');
 
       _clearanceData.value = data;
     } catch (e, stack) {
-      //print('❌ ERROR fetching clearance letter: $e');
-      //print('📄 STACK TRACE:\n$stack');
+      print('❌ [ClearanceController] Error: $e');
+      print('📄 Stack Trace:\n$stack');
       Get.snackbar("Error", "Failed to fetch clearance letter data");
     } finally {
       isLoading.value = false;

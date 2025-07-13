@@ -3,37 +3,42 @@ import 'package:http/http.dart' as http;
 import '../model/name_model.dart';
 
 class NameService {
-  static const String baseUrl = 'http://10.0.2.2:5000/api/students';
+  static const String baseUrl = 'http://10.0.2.2:5000/api/students'; // ✅ Android Emulator base URL
 
+  /// ✅ Fetch student profile using stored ID
   static Future<StudentModel?> getStudentById(String id) async {
     try {
       final url = Uri.parse('$baseUrl/$id');
-      //print('📡 Fetching student profile from: $url');
+      print('📡 [GET Student] $url');
 
       final response = await http.get(url);
 
-      //print('📥 Response status: ${response.statusCode}');
-      //print('📥 Response body: ${response.body}');
+      print('📥 Status: ${response.statusCode}');
+      print('📥 Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         return StudentModel.fromJson(jsonData);
       } else {
-        //print('❌ Failed to fetch student. Status: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-     // print('❌ Exception in getStudentById: $e');
+      print('❌ [GET Student] Exception: $e');
       return null;
     }
   }
 
-  static Future<bool> toggleNameCorrection(String id, bool requested) async {
+  /// ✅ Toggle name correction request (Yes / No)
+  static Future<bool> toggleNameCorrection(String studentId, bool requested) async {
     try {
-      final url = Uri.parse('$baseUrl/request-name-correction-toggle');
-      final body = jsonEncode({'studentId': id, 'requested': requested});
+      final url = Uri.parse('$baseUrl/request-name-correction-toggle'); // ✅ Correct backend route
+      final body = jsonEncode({
+        'studentId': studentId,
+        'requested': requested,
+      });
 
-      //print('📡 Toggling name correction: $body');
+      print('📤 [POST] $url');
+      print('📦 Body: $body');
 
       final response = await http.post(
         url,
@@ -41,10 +46,22 @@ class NameService {
         body: body,
       );
 
-      //print('📥 Toggle response: ${response.statusCode} → ${response.body}');
-      return response.statusCode == 200;
+      print('📥 Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        try {
+          final err = jsonDecode(response.body);
+          print('❌ Backend Error: ${err['message']}');
+        } catch (_) {
+          print('❌ Response is not valid JSON');
+        }
+        return false;
+      }
     } catch (e) {
-      //print('❌ Exception in toggleNameCorrection: $e');
+      print('❌ Exception in toggleNameCorrection: $e');
       return false;
     }
   }

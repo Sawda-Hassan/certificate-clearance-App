@@ -48,7 +48,8 @@ class AppPages {
     GetPage(name: AppRoutes.LabClearancePage, page: () => LabClearancePage()),
     GetPage(name: AppRoutes.financeClearance, page: () => FinanceClearancePage()),
     GetPage(name: AppRoutes.financePayment, page: () => const Paymentscreen()),
-    GetPage(name: AppRoutes.examClearance, page: () => const ExaminationClearancePage()),
+    GetPage(name: AppRoutes.examClearance,page: () => ExaminationClearancePage(),
+),
      GetPage(
       name: AppRoutes.nameCorrection,
       page: () => const NameVerificationPage(),

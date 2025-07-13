@@ -17,7 +17,7 @@ class ChatbotFloatingButton extends StatelessWidget {
           children: [
             // ✅ Chatbot Icon (use your asset path here)
             Image.asset(
-              'assets/images/chatbot_icon.png', // <-- Replace with your actual image path
+              'assets/images/chat.png', // <-- Replace with your actual image path
               width: 52,
               height: 52,
             ),

@@ -4,12 +4,17 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controller/finance_controller.dart';
 import '../../../routes/app_routes.dart';
+import '../../chatbot/chatbot_floating_button.dart';
+import '../../notification/view/notification_screen.dart';
+import '../../chatbot/chatbot_screen.dart';
+import '../../chatbot/chatbot_badge_controller.dart';
 import '../../labclearance/view/lab_clearance_page.dart';
+import '../../../widgets/ClearanceStepper.dart';
+import '../../FacultyClearancepage/model/faculty_models.dart' as custom;
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
-//const _orange = Color(0xFFFF9800);
 
 class FinanceClearancePage extends StatefulWidget {
   const FinanceClearancePage({Key? key}) : super(key: key);
@@ -28,9 +33,7 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
     final sid = ctrl.box.read('studentId');
     if (sid != null && sid.toString().isNotEmpty) {
       ctrl.loadStatus(sid);
-      ctrl.connectSocket(sid); // ✅ Connect socket for real-time updates
-    } else {
-     // print('❌ No studentId in storage');
+      ctrl.connectSocket(sid);
     }
   }
 
@@ -47,6 +50,17 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
       final percentLabel = (progress * 100).round();
       final statusColor = isCleared ? _green : Colors.orange;
       final statusLabel = isCleared ? 'Cleared' : 'Pending';
+
+      final steps = [
+        custom.ClearanceStep('Faculty', custom.StepState.approved),
+        custom.ClearanceStep('Library', custom.StepState.approved),
+        custom.ClearanceStep('Lab', custom.StepState.approved),
+        custom.ClearanceStep(
+          'Finance',
+          isCleared ? custom.StepState.approved : custom.StepState.pending,
+        ),
+        custom.ClearanceStep('Examination', custom.StepState.pending),
+      ];
 
       return Scaffold(
         backgroundColor: Colors.white,
@@ -66,8 +80,6 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _navy),
                     ),
                     const SizedBox(height: 48),
-
-                    // Finance Status Card
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -105,10 +117,7 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Payment Warning Card
                     if (!isCleared)
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
@@ -174,7 +183,8 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                           ),
                         ),
                       ),
-
+                    const SizedBox(height: 30),
+                    ClearanceStepper(steps: steps, progress: progress),
                     const SizedBox(height: 30),
                     const Padding(
                       padding: EdgeInsets.only(left: 8.0, bottom: 15.0),
@@ -183,7 +193,6 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                         style: TextStyle(color: _navy, fontSize: 17, fontWeight: FontWeight.bold),
                       ),
                     ),
-
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -218,7 +227,6 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.only(left: 16.0),
@@ -325,30 +333,50 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 1,
-      selectedItemColor: _navy,
-      unselectedItemColor: Colors.black.withOpacity(0.5),
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
-      ],
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            Get.offAllNamed('/student-welcome');
-            break;
-          case 2:
-            Get.snackbar('Coming soon', 'Notification screen not implemented');
-            break;
-          case 3:
-            Get.snackbar('Coming soon', 'Profile screen not implemented');
-            break;
-        }
-      },
-    );
+    return Obx(() {
+      final unread = Get.find<ChatbotBadgeController>().unreadCount.value;
+
+      return BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: _navy,
+        unselectedItemColor: Colors.black.withOpacity(0.5),
+        type: BottomNavigationBarType.fixed,
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
+          const BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
+          const BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Image.asset('assets/images/chat.png', width: 44, height: 44),
+                if (unread > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(width: 10, height: 10, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                  ),
+              ],
+            ),
+            activeIcon: Image.asset('assets/images/ca.png', width: 24, height: 24),
+            label: 'Chatbot',
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Get.offAllNamed('/student-welcome');
+              break;
+            case 3:
+              Get.offAllNamed(AppRoutes.profile);
+              break;
+            case 4:
+              Get.to(() => ChatbotScreen());
+              break;
+          }
+        },
+      );
+    });
   }
 }

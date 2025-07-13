@@ -19,14 +19,10 @@ class NameController extends GetxController {
   Future<void> fetchStudentProfile() async {
     isLoading.value = true;
 
-    //print('🟡 [NameController] START fetchStudentProfile');
-    //print('📦 [NameController] Current GetStorage keys: ${box.getKeys()}');
-
     final id = box.read('id');
-    //print('📦 [NameController] Fetched from GetStorage → id: $id');
+    print('🧠 [Storage] Retrieved ID from GetStorage: $id');
 
     if (id == null || id is! String || id.isEmpty) {
-      //print('❌ [NameController] No valid student ID found in GetStorage');
       Get.snackbar('Error', 'Student ID not found. Please log in again.');
       isLoading.value = false;
       return;
@@ -39,37 +35,40 @@ class NameController extends GetxController {
       );
 
       if (result != null) {
-        //print('✅ [NameController] Student profile loaded: ${result.fullName}');
+        print('✅ [Profile] Loaded: ${result.fullName}');
         student.value = result;
       } else {
-        //print('⚠️ [NameController] Student result was null');
         Get.snackbar('Error', 'Failed to load student profile');
+        print('⚠️ [Profile] API returned null');
       }
     } catch (e) {
-      //print('❌ [NameController] Exception in fetchStudentProfile: $e');
       Get.snackbar('Error', 'Something went wrong');
+      print('❌ [Profile] Exception: $e');
     } finally {
       isLoading.value = false;
-      //print('🟢 [NameController] END fetchStudentProfile');
     }
   }
 
   Future<void> setCorrectionRequested(bool requested) async {
-    final studentId = student.value?.id ?? '';
+    final studentId = student.value?.studentId ?? ''; // ✅ MUST BE studentId like "C1210159"
+
+    print('🎯 [setCorrectionRequested] studentId = $studentId');
+
     if (studentId.isEmpty) {
       Get.snackbar("Error", "Student ID is missing");
+      print("❌ [Toggle] Missing student ID.");
       return;
     }
 
     final success = await NameService.toggleNameCorrection(studentId, requested);
     if (success) {
       correctionRequested.value = requested;
-     // print('✅ [NameController] Correction request toggled: $requested');
+      print('✅ [Toggle] Request success. New state: $requested');
       if (requested) {
         Get.toNamed('/name-correction-form');
       }
     } else {
-      //print('❌ [NameController] Failed to toggle name correction');
+      print('❌ [Toggle] Failed to update correction status.');
       Get.snackbar("Error", "Failed to update name correction status");
     }
   }

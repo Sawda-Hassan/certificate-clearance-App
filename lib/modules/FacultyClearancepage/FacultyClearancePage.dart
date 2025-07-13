@@ -7,11 +7,9 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../routes/app_routes.dart';
 import 'controlerr/faculty_controller.dart';
 import './model/faculty_models.dart' as custom;
-import '../../modules/chatbot/chatbot_floating_button.dart';
-import '../../modules/notification/view/notification_screen.dart';
 import '../../modules/chatbot/chatbot_screen.dart';
 import '../chatbot/chatbot_badge_controller.dart';
-
+import'../../widgets/ClearanceStepper.dart';
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
@@ -91,6 +89,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                     ),
                     const SizedBox(height: 48),
 
+                    // Status Card
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -136,66 +135,14 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                     ] else if (statusLabel == 'Incomplete') ...[
                       _statusCard(Icons.warning_amber_rounded, '⚠️ Incomplete', ctrl.rejectionReason.value.isNotEmpty ? ctrl.rejectionReason.value : 'Your faculty clearance is marked as incomplete. Please submit the required documents.', Colors.deepPurple, bgColor: const Color(0xFFF3F0FF))
                     ],
-                    
+
                     const SizedBox(height: 36),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Stack(
-                        alignment: Alignment.centerLeft,
-                        children: [
-                          Positioned(
-                            top: 14,
-                            left: 0,
-                            right: 0,
-                            child: Container(height: 2, color: Colors.grey.shade300),
-                          ),
-                          Positioned(
-                            top: 14,
-                            left: 0,
-                            right: MediaQuery.of(context).size.width * (1 - progress),
-                            child: Container(height: 2, color: _green),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: ctrl.steps.map((custom.ClearanceStep step) {
-                              final isCleared = step.state == custom.StepState.approved;
-                              return Column(
-                                children: [
-                                  Container(
-                                    width: 26,
-                                    height: 26,
-                                    decoration: BoxDecoration(
-                                      color: isCleared ? _green : const Color.fromARGB(255, 15, 1, 95),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: isCleared ? _green : Colors.grey.shade400,
-                                        width: 1.2,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      isCleared ? Icons.check : Icons.lock,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    step.label.toUpperCase(),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isCleared ? Colors.black : Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
+                    // Replaced with ClearanceStepper widget
+                    ClearanceStepper(
+                      steps: ctrl.steps,
+                      progress: progress,
                     ),
-
 
                     const SizedBox(height: 45),
                     const Text('Progress...', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: _navy)),
@@ -229,22 +176,21 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                             center: Text('$percentLabel%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                           ),
                         ),
-                        
                       ],
-                      
                     ),
+
                     const SizedBox(height: 10),
-Padding(
-  padding: const EdgeInsets.only(left: 16.0),
-  child: Text(
-    'Completed $percentLabel% of your certificate clearance',
-    style: const TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      color: Colors.black87,
-    ),
-  ),
-),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: Text(
+                        'Completed $percentLabel% of your certificate clearance',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
 
                     const SizedBox(height: 56),
 
@@ -392,7 +338,7 @@ class _BottomNav extends StatelessWidget {
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                Image.asset('assets/images/chatbot_icon.png', width: 34, height: 34),
+                Image.asset('assets/images/chat.png', width: 44, height: 44),
                 if (unread > 0)
                   Positioned(
                     top: -2,
