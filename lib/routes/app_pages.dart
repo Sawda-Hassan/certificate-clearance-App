@@ -18,9 +18,10 @@ import '../modules/appointments/views/appointment_page.dart';
 import '../modules/clearnceletter/view/clearanceletter_page.dart';
 import '../modules/name_correction_not_allowed/veiw/name_correction_not_allowed.dart';
 import '../modules/chatbot/chatbot_screen.dart';
+import '../modules/Final Clearance Status/veiw/final_clearance_status.dart';
 
 
-
+import '../modules/notification/view/notification_screen.dart' ;
 
 
 
@@ -85,6 +86,16 @@ GetPage(
 GetPage(
   name: AppRoutes.chatbot,
   page: () => ChatbotScreen(),
+),
+GetPage(
+  name: AppRoutes.finalStatus,
+  page: () => FinalClearanceStatus(),
+),
+
+
+GetPage(
+  name: AppRoutes.notification,
+  page: () => const NotificationScreen(),
 ),
 
 

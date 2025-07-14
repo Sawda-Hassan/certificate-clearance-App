@@ -10,6 +10,15 @@ class AppointmentController extends GetxController {
     isLoading.value = true;
     final data = await AppointmentService.fetchAppointmentByStudent(studentId);
     appointment.value = data;
+
+    if (data != null) {
+      print("📅 Appointment date: ${data.appointmentDate}");
+      print("🔁 Rescheduled: ${data.rescheduled}");
+      print("📍 Status: ${data.status}");
+    } else {
+      print("❌ No appointment found for $studentId");
+    }
+
     isLoading.value = false;
   }
 

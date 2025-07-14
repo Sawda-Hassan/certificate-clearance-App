@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../controller/clearanceletter_controller.dart';
+import '../../../routes/app_routes.dart';
 
 class ClearanceLetterPage extends StatelessWidget {
   const ClearanceLetterPage({super.key});
@@ -34,7 +35,9 @@ class ClearanceLetterPage extends StatelessWidget {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // LETTER CARD
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -73,7 +76,10 @@ class ClearanceLetterPage extends StatelessWidget {
                   ],
                 ),
               ),
+
               const SizedBox(height: 24),
+
+              // DOWNLOAD PDF BUTTON
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -119,6 +125,28 @@ class ClearanceLetterPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 4,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // BACK TO HOME BUTTON
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+Get.offAllNamed(AppRoutes.finalStatus, arguments: student.studentId);
+
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Back to Home'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(color: Color(0xFF0A2647)),
+                    foregroundColor: const Color(0xFF0A2647),
+                    textStyle: const TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),

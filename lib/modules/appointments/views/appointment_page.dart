@@ -4,6 +4,7 @@ import '../controller/appointment_controller.dart';
 import '../../../modules/auth/controllers/auth_controller.dart';
 import 'package:intl/intl.dart';
 import '../../../routes/app_routes.dart';
+import '../../Final Clearance Status/veiw/final_clearance_status.dart';
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF28A745);
@@ -16,14 +17,25 @@ class AppointmentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Correct studentId field used here
     final studentId = auth.loggedInStudent.value?.studentId ?? '';
 
-    // Load appointment
-    ctrl.loadAppointment(studentId);
+    ctrl.loadAppointment(studentId); // 📡 Load latest appointment
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCFCFC),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+  Get.offAll(() => const FinalClearanceStatus());
+},
+        ),
+        title: const Text("Appointment"),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 22),
+        centerTitle: true,
+        backgroundColor: _navy,
+        elevation: 1,
+      ),
       body: SafeArea(
         child: Obx(() {
           if (ctrl.isLoading.value) {
@@ -36,11 +48,14 @@ class AppointmentPage extends StatelessWidget {
             return const Center(child: Text("No appointment found."));
           }
 
+          // 🌍 Convert appointmentDate to EAT (+3)
+          final eatDate = appointment.appointmentDate.toLocal();
+
           return Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 10),
                 const Text(
                   'Your Appointment',
                   style: TextStyle(
@@ -90,12 +105,12 @@ class AppointmentPage extends StatelessWidget {
                     children: [
                       _AppointmentDetailRow(
                         icon: Icons.calendar_today,
-                        text: DateFormat.yMMMMd().format(appointment.appointmentDate),
+                        text: DateFormat.yMMMMd().format(eatDate),
                       ),
                       const SizedBox(height: 12),
                       _AppointmentDetailRow(
                         icon: Icons.access_time,
-                        text: DateFormat.jm().format(appointment.appointmentDate),
+                        text: DateFormat.jm().format(eatDate),
                       ),
                       const SizedBox(height: 12),
                       const _AppointmentDetailRow(
@@ -113,7 +128,6 @@ class AppointmentPage extends StatelessWidget {
                 ),
 
                 const Spacer(),
-                const SizedBox(height: 2),
 
                 SizedBox(
                   width: double.infinity,

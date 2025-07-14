@@ -9,6 +9,10 @@ class AppointmentService {
     final url = Uri.parse("$baseHost/student/$studentId");
     final response = await http.get(url);
 
+    print("📡 [HTTP] GET $url");
+    print("📦 Response Code: ${response.statusCode}");
+    print("📦 Body: ${response.body}");
+
     if (response.statusCode == 200) {
       return AppointmentModel.fromJson(jsonDecode(response.body));
     } else {

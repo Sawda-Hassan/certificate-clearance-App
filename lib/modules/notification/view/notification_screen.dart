@@ -1,72 +1,82 @@
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:get_storage/get_storage.dart';
 import '../controller/notification_controller.dart';
-import './notification_tile.dart';
+import '../model/notification_model.dart';
 
-class NotificationScreen extends StatefulWidget {
+import '../../Final Clearance Status/veiw/final_clearance_status.dart';
+class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
   @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
-}
-
-class _NotificationScreenState extends State<NotificationScreen> {
-  final controller = Get.put(NotificationController());
-  final String studentId = '123456'; // Replace with real login id
-
-  @override
-  void initState() {
-    super.initState();
-    _setupFCM();
-    controller.loadNotifications(studentId);
-  }
-
-  void _setupFCM() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    await messaging.requestPermission();
-    String? token = await messaging.getToken();
-    print('🔑 FCM Token: $token');
-
-    FirebaseMessaging.onMessage.listen((message) {
-      controller.loadNotifications(studentId);
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(message.notification?.title ?? 'New Message'),
-          content: Text(message.notification?.body ?? ''),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))
-          ],
-        ),
-      );
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      controller.loadNotifications(studentId);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(NotificationController());
+    final box = GetStorage();
+    final studentId = box.read('studentId');
+
+    // Fetch notifications when screen is built
+    controller.fetchNotifications(studentId);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+  Get.offAll(() => const FinalClearanceStatus());
+},
+
+        ),
+        title: const Text('Notifications'),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 26, 14, 94),
+      ),
       body: Obx(() {
-        if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
-        if (controller.notifications.isEmpty) return Center(child: Text('No notifications.'));
-        return ListView.builder(
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.notifications.isEmpty) {
+          return const Center(child: Text('No notifications found.'));
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(10),
+          separatorBuilder: (_, __) => const Divider(height: 0),
           itemCount: controller.notifications.length,
           itemBuilder: (context, index) {
-            final note = controller.notifications[index];
-            return NotificationTile(
-              notification: note,
-              onTap: () => controller.markAsRead(note.id),
+            final NotificationModel notif = controller.notifications[index];
+
+            return ListTile(
+              leading: Icon(
+                notif.isRead ? Icons.notifications_none : Icons.notifications_active,
+                color: notif.isRead ? Colors.grey : const Color.fromARGB(255, 11, 7, 68),
+              ),
+              title: Text(
+                notif.type,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(notif.message),
+              trailing: Text(
+                _formatTimeAgo(notif.createdAt),
+                style: const TextStyle(color: Colors.grey),
+              ),
+              onTap: () async {
+                await controller.markNotificationAsRead(notif.id);
+                controller.fetchNotifications(studentId); // Refresh list
+              },
             );
           },
         );
       }),
     );
   }
+
+  String _formatTimeAgo(DateTime timestamp) {
+    final diff = DateTime.now().difference(timestamp);
+    if (diff.inSeconds < 60) return 'now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
 }
-*/

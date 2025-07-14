@@ -327,9 +327,10 @@ class _AppBarWaveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
-
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
+
+  static const _navy = Color.fromARGB(255, 33, 3, 102);
 
   @override
   Widget build(BuildContext context) {
@@ -337,25 +338,44 @@ class _BottomNav extends StatelessWidget {
       final unread = Get.find<ChatbotBadgeController>().unreadCount.value;
 
       return BottomNavigationBar(
-        currentIndex: 1,
+        currentIndex: 0, // Set this dynamically depending on screen
         selectedItemColor: _navy,
         unselectedItemColor: Colors.black.withOpacity(0.5),
         type: BottomNavigationBarType.fixed,
         items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
-          const BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
-          const BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.assignment),
+            label: 'Status',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            label: 'Appointment',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notification',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
           BottomNavigationBarItem(
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                Image.asset('assets/images/chat.png', width: 44, height: 44),
+                Image.asset('assets/images/chat.png', width: 32, height: 32),
                 if (unread > 0)
                   Positioned(
                     top: -2,
                     right: -2,
-                    child: Container(width: 10, height: 10, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -366,7 +386,13 @@ class _BottomNav extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAllNamed('/student-welcome');
+              // Status page (current)
+              break;
+            case 1:
+              Get.toNamed('/appointment'); // ✅ appointment route
+              break;
+            case 2:
+              Get.toNamed('/notifications');
               break;
             case 3:
               Get.offAllNamed(AppRoutes.profile);

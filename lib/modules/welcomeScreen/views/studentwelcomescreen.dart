@@ -1,17 +1,15 @@
-// lib/YourModule/student_welcome_screen.dart
-// --------------------------------------------------
-// Navigates to the FacultyClearancePage to show the group’s clearance status.
-// --------------------------------------------------
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// ─── Your screens ──────────────────────────────────────────────────────────
-// Adjust the path below if necessary (matching your folder structure):
+// ─── Screens ─────────────────────────────────────────────────────
 import '../../FacultyClearancepage/FacultyClearancePage.dart';
+import '../../Final Clearance Status/veiw/final_clearance_status.dart';
+import '../../Final Clearance Status/controller/clearance_controller.dart';
 
-// ─── Controllers ───────────────────────────────────────────────────────────
+// ─── Controllers ────────────────────────────────────────────────
 import '../../FacultyClearancepage/controlerr/faculty_controller.dart';
+import '../../auth/controllers/auth_controller.dart';
+
 
 class StudentWelcomeScreen extends StatelessWidget {
   final String studentName;
@@ -25,8 +23,8 @@ class StudentWelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Instantiate (or find) the FacultyController once for this flow.
     final FacultyController facultyCtrl = Get.put(FacultyController());
+    final ClearanceController clearanceCtrl = Get.put(ClearanceController());
 
     final String profileImage = gender.toLowerCase() == 'female'
         ? 'assets/images/girl_profile.png'
@@ -68,20 +66,16 @@ class StudentWelcomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 40),
-
-            // ── illustration ──
             Expanded(
               child: Center(
                 child: Image.asset(
                   'assets/images/g.png',
-                  width: 300, // scale down if 1050 is too big
+                  width: 300,
                   height: 300,
                   fit: BoxFit.contain,
                 ),
               ),
             ),
-
-            // ── action button ──
             Padding(
               padding: const EdgeInsets.only(bottom: 89),
               child: Center(
@@ -93,11 +87,50 @@ class StudentWelcomeScreen extends StatelessWidget {
                       onPressed: facultyCtrl.isLoading.value
                           ? null
                           : () async {
-                              // 1) Call startClearance() to ensure the group record exists
-                              await facultyCtrl.startClearance();
+                              facultyCtrl.isLoading.value = true;
 
-                              // 2) Navigate to the FacultyClearancePage to read status
-                              Get.to(() => FacultyClearancePage());
+                              final studentId = Get.find<AuthController>()
+                                  .loggedInStudent
+                                  .value
+                                  ?.studentId;
+
+                              print('🧠 Logged in studentId: $studentId');
+
+                              if (studentId != null) {
+                                await clearanceCtrl.loadClearance(studentId);
+
+                                print('📦 Clearance Steps Length: ${clearanceCtrl.steps.length}');
+
+                                for (var step in clearanceCtrl.steps) {
+                                  print('🔍 Step: ${step.title} - Status: ${step.status}');
+                                }
+
+                                if (clearanceCtrl.steps.isEmpty) {
+                                  print('🚫 No clearance steps found. Starting clearance...');
+                                  await facultyCtrl.startClearance();
+                                  Get.to(() => FacultyClearancePage());
+                                } else {
+                                  final allowedStatuses = ['cleared', 'approved'];
+
+                                  final allCleared = clearanceCtrl.steps.every(
+                                    (s) => allowedStatuses.contains(s.status.toLowerCase()),
+                                  );
+
+                                  print('✅ All Steps Cleared: $allCleared');
+
+                                  if (allCleared) {
+                                    print('🎉 Navigating to FinalClearanceStatus()');
+                                    Get.to(() => FinalClearanceStatus());
+                                  } else {
+                                    print('➡️ Some steps still pending. Navigating to FacultyClearancePage()');
+                                    Get.to(() => FacultyClearancePage());
+                                  }
+                                }
+                              } else {
+                                print('❌ studentId is NULL. Cannot proceed.');
+                              }
+
+                              facultyCtrl.isLoading.value = false;
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0A2647),

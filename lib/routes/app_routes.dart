@@ -20,6 +20,8 @@ static const examClearance = '/exam-clearance';
   static const String nameCorrectionNotAllowed = '/name-correction-not-allowed';
     static const studentWelcome = '/student-welcome';
 static const chatbot = '/chatbot';
+static const finalStatus = '/final-status';
+  static const notification = '/notifications';
 
 
 
