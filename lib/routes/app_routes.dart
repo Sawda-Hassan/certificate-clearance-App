@@ -22,7 +22,8 @@ static const examClearance = '/exam-clearance';
 static const chatbot = '/chatbot';
 static const finalStatus = '/final-status';
   static const notification = '/notifications';
-
+static const notificationDetail = '/notification-detail';
+static const groupClearanceStatus = '/group-clearance-status';
 
 
 

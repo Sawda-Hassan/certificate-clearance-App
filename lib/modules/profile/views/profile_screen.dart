@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
-
+import '../../chatbot/chatbot_badge_controller.dart';
+import '../../chatbot/chatbot_screen.dart';
+import '../../Final Clearance Status/veiw/final_clearance_status.dart';
 class ProfileScreen extends StatelessWidget {
   final AuthController authController = Get.isRegistered<AuthController>()
       ? Get.find<AuthController>()
@@ -12,6 +14,20 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+  Get.offAll(() => const FinalClearanceStatus());
+},
+
+        ),
+        title: const Text('Profile'),
+        titleTextStyle: const TextStyle(color: Color.fromARGB(255, 255, 251, 251), fontSize: 24),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 26, 14, 94),
+      ),
+      
       bottomNavigationBar: const _BottomNav(),
       body: SafeArea(
         child: Obx(() {
@@ -40,14 +56,7 @@ class ProfileScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10, bottom: 30),
                   child: Column(
                     children: [
-                      const Text(
-                        'Profile',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                   
                       const SizedBox(height: 10),
                       Stack(
                         alignment: Alignment.center,
@@ -55,7 +64,6 @@ class ProfileScreen extends StatelessWidget {
                           SizedBox(
                             height: 130,
                             width: double.infinity,
-                            child: CustomPaint(painter: DotBackgroundPainter()),
                           ),
                           CircleAvatar(
                             radius: 40,
@@ -102,7 +110,7 @@ class ProfileScreen extends StatelessWidget {
 
                 // 🚪 Styled Logout Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
                   child: SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -196,70 +204,82 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-// 🎨 Dot background painter
-class DotBackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint blue = Paint()..color = const Color(0xFF1E3A8A);
-    final Paint yellow = Paint()..color = const Color(0xFFFFC107);
-    const radius = 5.0;
-
-    final dots = [
-      Offset(size.width * 0.15, 35),
-      Offset(size.width * 0.25, 55),
-      Offset(size.width * 0.35, 80),
-      Offset(size.width * 0.15, 115),
-      Offset(size.width * 0.85, 35),
-      Offset(size.width * 0.75, 55),
-      Offset(size.width * 0.65, 80),
-      Offset(size.width * 0.85, 115),
-    ];
-
-    for (int i = 0; i < dots.length; i++) {
-      canvas.drawCircle(dots[i], radius, i.isOdd ? yellow : blue);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 // ---- Custom Bottom Navigation ----
 const Color _navy = Color(0xFF0A1E49); // Deep navy color
+
 
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 3,
-      selectedItemColor: _navy,
-      unselectedItemColor: Colors.black.withOpacity(0.5),
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
-      ],
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            Get.offAllNamed(AppRoutes.studentWelcome);
-            break;
-          case 1:
-             Get.snackbar('Coming soon', 'Notification screen not implemented');
+    final unread = Get.find<ChatbotBadgeController>().unreadCount;
 
-            break;
-          case 2:
-            Get.snackbar('Coming soon', 'Notification screen not implemented');
-            break;
-          case 3:
-            Get.offAllNamed(AppRoutes.profile); // already here
-            break;
-        }
-      },
-    );
+    return Obx(() {
+      return BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: const Color.fromARGB(255, 33, 3, 102),
+        unselectedItemColor: Colors.black.withOpacity(0.5),
+        type: BottomNavigationBarType.fixed,
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.event_note),
+            label: 'apointment',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.assignment),
+            label: 'Status',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notification',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Image.asset('assets/images/chat.png', width: 44, height: 44),
+                if (unread.value > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            activeIcon: Image.asset('assets/images/ca.png', width: 24, height: 24),
+            label: 'Chatbot',
+          ),
+        ],
+         onTap: (index) {
+  switch (index) {
+    case 0:
+      Get.offAllNamed(AppRoutes.appointment);
+      break;
+    case 1:
+      Get.offAllNamed(AppRoutes.finalStatus); // ✅ Add this line
+      break;
+    case 2:
+      Get.offAllNamed(AppRoutes.notification);
+      break;
+    case 3:
+      Get.offAllNamed(AppRoutes.profile);
+      break;
+    case 4:
+      Get.to(() => ChatbotScreen());
+      break;
   }
-}
+});});}
+
+    }

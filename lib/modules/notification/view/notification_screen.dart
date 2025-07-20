@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../controller/notification_controller.dart';
 import '../model/notification_model.dart';
-
 import '../../Final Clearance Status/veiw/final_clearance_status.dart';
+import '../../notification_detail/notification_detail_screen.dart';
+
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
@@ -22,9 +23,8 @@ class NotificationScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-  Get.offAll(() => const FinalClearanceStatus());
-},
-
+            Get.offAll(() => const FinalClearanceStatus());
+          },
         ),
         title: const Text('Notifications'),
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
@@ -56,14 +56,22 @@ class NotificationScreen extends StatelessWidget {
                 notif.type,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text(notif.message),
+              subtitle: Text(
+                notif.message,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               trailing: Text(
                 _formatTimeAgo(notif.createdAt),
                 style: const TextStyle(color: Colors.grey),
               ),
               onTap: () async {
+                // ✅ Mark as read
                 await controller.markNotificationAsRead(notif.id);
-                controller.fetchNotifications(studentId); // Refresh list
+                controller.fetchNotifications(studentId);
+
+                // ✅ Navigate to detail screen with full data
+                Get.to(() => NotificationDetailScreen(notification: notif));
               },
             );
           },

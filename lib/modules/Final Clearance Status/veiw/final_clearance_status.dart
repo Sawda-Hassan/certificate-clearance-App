@@ -6,7 +6,7 @@ import '../../../routes/app_routes.dart';
 import '../../../modules/chatbot/chatbot_badge_controller.dart';
 import '../../../modules/chatbot/chatbot_screen.dart';
 import '../../auth/controllers/auth_controller.dart';
-
+import ' ../../final_clearance_status.dart';
 class FinalClearanceStatus extends StatefulWidget {
   const FinalClearanceStatus({super.key});
 
@@ -59,7 +59,7 @@ class _FinalClearanceStatusState extends State<FinalClearanceStatus> {
                       ),
                       Container(
                         margin: const EdgeInsets.only(left: 20, bottom: 16),
-                        padding: const EdgeInsets.symmetric(vertical: 19, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 233, 226, 226),
                           borderRadius: BorderRadius.circular(14),
@@ -254,23 +254,25 @@ class _BottomNav extends StatelessWidget {
             label: 'Chatbot',
           ),
         ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Get.offAllNamed(AppRoutes.appointment);
-              break;
-               case 2:
-        Get.offAllNamed(AppRoutes.notification); // Notifications
-        break;
-            case 3:
-              Get.offAllNamed(AppRoutes.profile);
-              break;
-            case 4:
-              Get.to(() => ChatbotScreen());
-              break;
-          }
-        },
-      );
-    });
+     onTap: (index) {
+  switch (index) {
+    case 0:
+      Get.offAllNamed(AppRoutes.appointment);
+      break;
+    case 1:
+      Get.offAllNamed(AppRoutes.finalStatus); // ✅ Add this line
+      break;
+    case 2:
+      Get.offAllNamed(AppRoutes.notification);
+      break;
+    case 3:
+      Get.offAllNamed(AppRoutes.profile);
+      break;
+    case 4:
+      Get.to(() => ChatbotScreen());
+      break;
   }
-}
+});});}
+
+    }
+  

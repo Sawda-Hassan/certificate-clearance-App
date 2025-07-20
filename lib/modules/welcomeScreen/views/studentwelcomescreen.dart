@@ -4,12 +4,16 @@ import 'package:get/get.dart';
 // ─── Screens ─────────────────────────────────────────────────────
 import '../../FacultyClearancepage/FacultyClearancePage.dart';
 import '../../Final Clearance Status/veiw/final_clearance_status.dart';
+import '../../Groupclearance/veiw/group_clearance_status_view.dart';
 import '../../Final Clearance Status/controller/clearance_controller.dart';
 
 // ─── Controllers ────────────────────────────────────────────────
 import '../../FacultyClearancepage/controlerr/faculty_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 
+// ─── Service ────────────────────────────────────────────────
+import '../../Groupclearance/service/group_clearance_service.dart'; // ✅ NEW
+import '../../Groupclearance/model/group_clearance_model.dart'; // ✅ NEW
 
 class StudentWelcomeScreen extends StatelessWidget {
   final String studentName;
@@ -25,6 +29,7 @@ class StudentWelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final FacultyController facultyCtrl = Get.put(FacultyController());
     final ClearanceController clearanceCtrl = Get.put(ClearanceController());
+    final GroupClearanceService groupService = GroupClearanceService(); // ✅
 
     final String profileImage = gender.toLowerCase() == 'female'
         ? 'assets/images/girl_profile.png'
@@ -97,37 +102,41 @@ class StudentWelcomeScreen extends StatelessWidget {
                               print('🧠 Logged in studentId: $studentId');
 
                               if (studentId != null) {
-                                await clearanceCtrl.loadClearance(studentId);
+                                // ✅ Check group phase status first
+                                try {
+                                  final groupStatus = await groupService.getClearanceStatus(studentId);
 
-                                print('📦 Clearance Steps Length: ${clearanceCtrl.steps.length}');
-
-                                for (var step in clearanceCtrl.steps) {
-                                  print('🔍 Step: ${step.title} - Status: ${step.status}');
-                                }
-
-                                if (clearanceCtrl.steps.isEmpty) {
-                                  print('🚫 No clearance steps found. Starting clearance...');
-                                  await facultyCtrl.startClearance();
-                                  Get.to(() => FacultyClearancePage());
-                                } else {
-                                  final allowedStatuses = ['cleared', 'approved'];
-
-                                  final allCleared = clearanceCtrl.steps.every(
-                                    (s) => allowedStatuses.contains(s.status.toLowerCase()),
-                                  );
-
-                                  print('✅ All Steps Cleared: $allCleared');
-
-                                  if (allCleared) {
-                                    print('🎉 Navigating to FinalClearanceStatus()');
-                                    Get.to(() => FinalClearanceStatus());
+                                  if (groupStatus.groupPhaseCleared) {
+                                    print('🎉 Group Phase Cleared! Navigating to GroupClearanceStatusPage...');
+                                    Get.to(() => const GroupClearanceStatusPage());
                                   } else {
-                                    print('➡️ Some steps still pending. Navigating to FacultyClearancePage()');
-                                    Get.to(() => FacultyClearancePage());
+                                    // 🔁 Continue with clearance logic
+                                    await clearanceCtrl.loadClearance(studentId);
+
+                                    if (clearanceCtrl.steps.isEmpty) {
+                                      print('🚫 No clearance steps found. Starting clearance...');
+                                      await facultyCtrl.startClearance();
+                                      Get.to(() => const FacultyClearancePage());
+                                    } else {
+                                      final allowedStatuses = ['cleared', 'approved'];
+
+                                      final allCleared = clearanceCtrl.steps.every(
+                                        (s) => allowedStatuses.contains(s.status.toLowerCase()),
+                                      );
+
+                                      print('✅ All Steps Cleared: $allCleared');
+
+                                      if (allCleared) {
+                                        Get.to(() => const FinalClearanceStatus());
+                                      } else {
+                                        Get.to(() => const FacultyClearancePage());
+                                      }
+                                    }
                                   }
+                                } catch (e) {
+                                  print('❌ Error checking group phase: $e');
+                                  Get.snackbar('Error', 'Could not check group clearance.');
                                 }
-                              } else {
-                                print('❌ studentId is NULL. Cannot proceed.');
                               }
 
                               facultyCtrl.isLoading.value = false;

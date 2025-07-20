@@ -6,7 +6,6 @@ import '../../../routes/app_routes.dart';
 const _navy = Color(0xFF0A2647);
 const _lightBlue = Color(0xFFE8F3FF);
 
-// Curved AppBar with back arrow
 class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   const CurvedAppBar({super.key, required this.title});
@@ -72,7 +71,6 @@ class _AppBarWaveClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
-// Name Verification Page
 class NameVerificationPage extends StatelessWidget {
   const NameVerificationPage({super.key});
 
@@ -126,11 +124,20 @@ class NameVerificationPage extends StatelessWidget {
                     // YES button
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () async {
-                          await ctrl.setCorrectionRequested(true);
-                          if (ctrl.correctionRequested.value == true) {
-                            Get.toNamed(AppRoutes.nameUpload);
-                          }
+                        onPressed: () {
+                          Get.defaultDialog(
+                            title: "Confirm Change",
+                            middleText: "Are you sure you want to request a name correction?",
+                            textCancel: "Cancel",
+                            textConfirm: "Yes, Continue",
+                            confirmTextColor: Colors.white,
+                            buttonColor: _navy,
+                            onConfirm: () async {
+                              await ctrl.setCorrectionRequested(true);
+                              Get.back(); // Close dialog
+                              Get.toNamed(AppRoutes.nameUpload);
+                            },
+                          );
                         },
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
@@ -150,10 +157,24 @@ class NameVerificationPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
+
                     // NO button
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => ctrl.setCorrectionRequested(false),
+                        onPressed: () {
+                          Get.defaultDialog(
+                            title: "Confirm Selection",
+                            middleText: "Are you sure your name is correct and you don’t want to change it?",
+                            textCancel: "Cancel",
+                            textConfirm: "Yes, It's Correct",
+                            confirmTextColor: Colors.white,
+                            buttonColor: _navy,
+                            onConfirm: () {
+                              ctrl.setCorrectionRequested(false);
+                              Get.back(); // Close dialog
+                            },
+                          );
+                        },
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
                             color: ctrl.correctionRequested.value == false ? _navy : Colors.grey,
@@ -176,35 +197,7 @@ class NameVerificationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 133),
-
-                // Request Certificate Button - only enabled if correctionRequested == false
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: ctrl.correctionRequested.value == false
-    ? () async {
-        await ctrl.requestCertificate();
-        Get.toNamed(AppRoutes.appointment); // Navigate anyway
-      }
-    : null,
-
-               
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ctrl.correctionRequested.value == false
-                          ? _navy
-                          : Colors.grey.shade400,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'VEIW Appoinnment',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 80), // Adjust spacing since button is gone
               ],
             ),
           );

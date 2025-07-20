@@ -79,7 +79,7 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _navy),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 10),
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -87,7 +87,7 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                         side: const BorderSide(color: Color.fromARGB(255, 216, 221, 233)),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
                             Container(
@@ -117,10 +117,10 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     if (!isCleared)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
+                        padding: const EdgeInsets.only(top: 3.0),
                         child: Container(
                           width: double.infinity,
                           margin: const EdgeInsets.symmetric(horizontal: 62),
@@ -288,7 +288,7 @@ class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 8, left: 16, right: 16),
+          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 6, left: 16, right: 16),
           child: Stack(
             alignment: Alignment.topCenter,
             children: [

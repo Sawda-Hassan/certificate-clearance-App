@@ -19,10 +19,9 @@ import '../modules/clearnceletter/view/clearanceletter_page.dart';
 import '../modules/name_correction_not_allowed/veiw/name_correction_not_allowed.dart';
 import '../modules/chatbot/chatbot_screen.dart';
 import '../modules/Final Clearance Status/veiw/final_clearance_status.dart';
-
-
+import '../modules/notification_detail/notification_detail_screen.dart';
 import '../modules/notification/view/notification_screen.dart' ;
-
+import '../modules/Groupclearance/veiw/group_clearance_status_view.dart';
 
 
 import 'app_routes.dart';
@@ -98,7 +97,15 @@ GetPage(
   page: () => const NotificationScreen(),
 ),
 
+GetPage(
+  name: AppRoutes.notificationDetail,
+  page: () => NotificationDetailScreen(notification: Get.arguments),
+),
 
+GetPage(
+  name: AppRoutes.groupClearanceStatus,
+  page: () => const GroupClearanceStatusPage(),
+),
   ];
   
   
