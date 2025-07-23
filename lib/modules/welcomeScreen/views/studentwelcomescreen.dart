@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// ─── Screens ─────────────────────────────────────────────────────
+// Screens
 import '../../FacultyClearancepage/FacultyClearancePage.dart';
-import '../../Final Clearance Status/veiw/final_clearance_status.dart';
-import '../../Groupclearance/veiw/group_clearance_status_view.dart';
-import '../../Final Clearance Status/controller/clearance_controller.dart';
+import '../../../modules/Groupclearance/veiw/group_clearance_status_view.dart';
+import '../../../modules/Final Clearance Status/veiw/final_clearance_status.dart';
 
-// ─── Controllers ────────────────────────────────────────────────
+// Controllers
+import '../../../modules/Groupclearance/controller/group_clearance_controller.dart';
+import '../../../modules/Final Clearance Status/controller/clearance_controller.dart';
 import '../../FacultyClearancepage/controlerr/faculty_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
-
-// ─── Service ────────────────────────────────────────────────
-import '../../Groupclearance/service/group_clearance_service.dart'; // ✅ NEW
-import '../../Groupclearance/model/group_clearance_model.dart'; // ✅ NEW
 
 class StudentWelcomeScreen extends StatelessWidget {
   final String studentName;
@@ -28,8 +25,6 @@ class StudentWelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FacultyController facultyCtrl = Get.put(FacultyController());
-    final ClearanceController clearanceCtrl = Get.put(ClearanceController());
-    final GroupClearanceService groupService = GroupClearanceService(); // ✅
 
     final String profileImage = gender.toLowerCase() == 'female'
         ? 'assets/images/girl_profile.png'
@@ -71,6 +66,7 @@ class StudentWelcomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 40),
+
             Expanded(
               child: Center(
                 child: Image.asset(
@@ -81,6 +77,8 @@ class StudentWelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Action Button
             Padding(
               padding: const EdgeInsets.only(bottom: 89),
               child: Center(
@@ -92,54 +90,59 @@ class StudentWelcomeScreen extends StatelessWidget {
                       onPressed: facultyCtrl.isLoading.value
                           ? null
                           : () async {
-                              facultyCtrl.isLoading.value = true;
-
                               final studentId = Get.find<AuthController>()
                                   .loggedInStudent
-                                  .value
-                                  ?.studentId;
+                                  .value!
+                                  .studentId;
 
-                              print('🧠 Logged in studentId: $studentId');
+                              // Start clearance backend entry
+                              await facultyCtrl.startClearance();
 
-                              if (studentId != null) {
-                                // ✅ Check group phase status first
-                                try {
-                                  final groupStatus = await groupService.getClearanceStatus(studentId);
+                              bool navigated = false;
 
-                                  if (groupStatus.groupPhaseCleared) {
-                                    print('🎉 Group Phase Cleared! Navigating to GroupClearanceStatusPage...');
-                                    Get.to(() => const GroupClearanceStatusPage());
-                                  } else {
-                                    // 🔁 Continue with clearance logic
-                                    await clearanceCtrl.loadClearance(studentId);
+                              // 1️⃣ Check Final Clearance and Name Correction Status
+                              try {
+                                final finalCtrl = Get.put(ClearanceController());
+                                await finalCtrl.loadClearance(studentId);
 
-                                    if (clearanceCtrl.steps.isEmpty) {
-                                      print('🚫 No clearance steps found. Starting clearance...');
-                                      await facultyCtrl.startClearance();
-                                      Get.to(() => const FacultyClearancePage());
-                                    } else {
-                                      final allowedStatuses = ['cleared', 'approved'];
+                                final approvedCount = finalCtrl.steps
+                                    .where((s) => s.status.toLowerCase() == 'approved')
+                                    .length;
 
-                                      final allCleared = clearanceCtrl.steps.every(
-                                        (s) => allowedStatuses.contains(s.status.toLowerCase()),
-                                      );
+                                // Check if all phases and name correction are approved
+                                final nameCorrectionStatus = await finalCtrl.checkNameCorrectionStatus(studentId);
 
-                                      print('✅ All Steps Cleared: $allCleared');
-
-                                      if (allCleared) {
-                                        Get.to(() => const FinalClearanceStatus());
-                                      } else {
-                                        Get.to(() => const FacultyClearancePage());
-                                      }
-                                    }
-                                  }
-                                } catch (e) {
-                                  print('❌ Error checking group phase: $e');
-                                  Get.snackbar('Error', 'Could not check group clearance.');
+                                // Only navigate to FinalClearanceStatus if all clearance phases and name correction are approved
+                                if (approvedCount == 5 && nameCorrectionStatus == 'approved') { // Adjust the approvedCount if more steps exist
+                                  Get.to(() => const FinalClearanceStatus());
+                                  navigated = true;
                                 }
+                              } catch (e) {
+                                print('⚠️ Final clearance or name correction not available: $e');
                               }
 
-                              facultyCtrl.isLoading.value = false;
+                              if (navigated) return;
+
+                              // 2️⃣ Check Group Clearance
+                              try {
+                                final groupCtrl = Get.put(GroupClearanceController());
+                                await groupCtrl.loadClearanceStatus(studentId);
+                                final groupCleared =
+                                    groupCtrl.clearanceStatus.value?.groupPhaseCleared ?? false;
+
+                                // Only navigate to GroupClearanceStatusPage if the group phase is cleared
+                                if (groupCleared) {
+                                  Get.to(() => const GroupClearanceStatusPage());
+                                  navigated = true;
+                                }
+                              } catch (e) {
+                                print('⚠️ Group clearance not available: $e');
+                              }
+
+                              if (navigated) return;
+
+                              // 3️⃣ If nothing started or all failed → Faculty
+                              Get.to(() => FacultyClearancePage());
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0A2647),

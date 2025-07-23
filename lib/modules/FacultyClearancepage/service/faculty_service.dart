@@ -28,4 +28,14 @@ class FacultyService {
       return {'ok': false, 'data': {'message': e.toString()}};
     }
   }
+
+  // ✅ New: Fetch full faculty group info
+  Future<Map<String, dynamic>> getMyGroupFaculty() async {
+    try {
+      final raw = await _api.get('/faculty/my-group');
+      return raw['data'] ?? {'ok': false, 'message': 'No response data'};
+    } catch (e) {
+      return {'ok': false, 'message': e.toString()};
+    }
+  }
 }

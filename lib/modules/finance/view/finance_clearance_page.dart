@@ -32,8 +32,11 @@ class _FinanceClearancePageState extends State<FinanceClearancePage> {
     ctrl = Get.put(FinanceController(), tag: 'finance');
     final sid = ctrl.box.read('studentId');
     if (sid != null && sid.toString().isNotEmpty) {
-      ctrl.loadStatus(sid);
-      ctrl.connectSocket(sid);
+      // Use post-frame callback to load status after the current build phase
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ctrl.loadStatus(sid);
+        ctrl.connectSocket(sid);
+      });
     }
   }
 
@@ -327,6 +330,7 @@ class _AppBarWaveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
+
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 

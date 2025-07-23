@@ -2,74 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/name_controller.dart';
 import '../../../routes/app_routes.dart';
+import '../../../widgets/curved_app_bar.dart';
 
 const _navy = Color(0xFF0A2647);
 const _lightBlue = Color(0xFFE8F3FF);
-
-class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  const CurvedAppBar({super.key, required this.title});
-
-  @override
-  Size get preferredSize => const Size.fromHeight(130);
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _AppBarWaveClipper(),
-      child: Container(
-        height: preferredSize.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF022A42), Color(0xFF2E1B61)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Get.back(),
-                ),
-              ),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AppBarWaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) => Path()
-    ..lineTo(0, size.height * .75)
-    ..quadraticBezierTo(size.width * .25, size.height, size.width * .5, size.height * .9)
-    ..quadraticBezierTo(size.width * .75, size.height * .8, size.width, size.height * .9)
-    ..lineTo(size.width, 0)
-    ..close();
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
 
 class NameVerificationPage extends StatelessWidget {
   const NameVerificationPage({super.key});
@@ -125,18 +61,71 @@ class NameVerificationPage extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          Get.defaultDialog(
-                            title: "Confirm Change",
-                            middleText: "Are you sure you want to request a name correction?",
-                            textCancel: "Cancel",
-                            textConfirm: "Yes, Continue",
-                            confirmTextColor: Colors.white,
-                            buttonColor: _navy,
-                            onConfirm: () async {
-                              await ctrl.setCorrectionRequested(true);
-                              Get.back(); // Close dialog
-                              Get.toNamed(AppRoutes.nameUpload);
-                            },
+                          showDialog(
+                            context: context,
+                            builder: (_) => Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              insetPadding: const EdgeInsets.symmetric(horizontal: 50),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text(
+                                      'Confirm Change',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      "Are you sure you want to request a name correction?",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 13.5),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            style: OutlinedButton.styleFrom(
+                                              side: const BorderSide(color: Colors.red),
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                            ),
+                                            child: const Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              Navigator.pop(context);
+                                              await ctrl.setCorrectionRequested(true);
+                                              Get.toNamed(AppRoutes.nameUpload);
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: _navy,
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Text("Yes, Continue", style: TextStyle(color: Colors.white)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           );
                         },
                         style: OutlinedButton.styleFrom(
@@ -162,17 +151,117 @@ class NameVerificationPage extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          Get.defaultDialog(
-                            title: "Confirm Selection",
-                            middleText: "Are you sure your name is correct and you don’t want to change it?",
-                            textCancel: "Cancel",
-                            textConfirm: "Yes, It's Correct",
-                            confirmTextColor: Colors.white,
-                            buttonColor: _navy,
-                            onConfirm: () {
-                              ctrl.setCorrectionRequested(false);
-                              Get.back(); // Close dialog
-                            },
+                          showDialog(
+                            context: context,
+                            builder: (_) => Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              insetPadding: const EdgeInsets.symmetric(horizontal: 50),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text(
+                                      'Confirm Selection',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      "Are you sure your name is correct and you don't want to change it?",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 13.5),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            style: OutlinedButton.styleFrom(
+                                              side: const BorderSide(color: Colors.red),
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                            ),
+                                            child: const Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              Navigator.pop(context);
+                                              await ctrl.setCorrectionRequested(false);
+
+                                              // ✅ Show only Back to Home
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Dialog(
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    insetPadding: const EdgeInsets.symmetric(horizontal: 50),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          const Icon(Icons.check_circle, color: Colors.green, size: 32),
+                                                          const SizedBox(height: 12),
+                                                          const Text(
+                                                            'Confirmation Successful!',
+                                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                          const SizedBox(height: 6),
+                                                          const Text(
+                                                            'Your selection has been confirmed.\nYour appointment will be notified soon.',
+                                                            style: TextStyle(fontSize: 13, color: Colors.black87),
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                          const SizedBox(height: 20),
+                                                          // ✅ No OK — Just go home
+                                                          GestureDetector(
+                                                            onTap: () => Get.offAllNamed(AppRoutes.finalStatus),
+                                                            child: const Row(
+                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              children: [
+                                                                Icon(Icons.arrow_back, size: 15, color: Colors.black54),
+                                                                SizedBox(width: 5),
+                                                                Text('Back to Home', style: TextStyle(fontSize: 13, color: Colors.black54)),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: _navy,
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Text("Yes, It's Correct", style: TextStyle(color: Colors.white)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           );
                         },
                         style: OutlinedButton.styleFrom(
@@ -197,7 +286,7 @@ class NameVerificationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 80), // Adjust spacing since button is gone
+                const SizedBox(height: 80),
               ],
             ),
           );

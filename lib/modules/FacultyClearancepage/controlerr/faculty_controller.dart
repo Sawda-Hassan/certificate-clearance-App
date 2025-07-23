@@ -39,12 +39,18 @@ class FacultyController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
     final auth = Get.find<AuthController>();
     groupId = auth.loggedInStudent.value?.groupId;
     print('📥 Student groupId: $groupId');
 
     if (groupId != null) {
-      SocketService().on('facultyStatusChanged', _handleFacultyStatusChanged);
+      SocketService().waitUntilConnectedAndListen(
+        'facultyStatusChanged',
+        _handleFacultyStatusChanged,
+      );
+    } else {
+      print('❌ groupId is null — cannot listen for facultyStatusChanged');
     }
 
     loadStatus();
@@ -52,6 +58,7 @@ class FacultyController extends GetxController {
 
   void _handleFacultyStatusChanged(dynamic data) {
     print('📡 facultyStatusChanged received: $data');
+
     if (data is Map && data['groupId'] == groupId) {
       print('✅ Matched groupId: Updating UI');
       status.value = data['status'] ?? '';
@@ -64,7 +71,7 @@ class FacultyController extends GetxController {
 
   @override
   void onClose() {
-    SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged);
+SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged as void Function(dynamic));
     super.onClose();
   }
 
@@ -98,5 +105,16 @@ class FacultyController extends GetxController {
     await _svc.startClearance();
     await loadStatus();
     isLoading.value = false;
+  }
+
+  Future<Map<String, dynamic>> getMyGroupFaculty() async {
+    try {
+      final result = await _svc.getMyGroupFaculty();
+      print('📘 getMyGroupFaculty result: $result');
+      return result;
+    } catch (e) {
+      print('❌ Error in getMyGroupFaculty controller: $e');
+      return {'ok': false, 'message': 'Unable to fetch faculty group'};
+    }
   }
 }

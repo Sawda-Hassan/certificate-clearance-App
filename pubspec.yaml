@@ -54,6 +54,7 @@ dependencies:
   audioplayers: ^5.2.1 # ✅ Use the latest stable version
   permission_handler: ^11.0.0
   google_fonts: ^6.1.0
+  path: ^1.8.3
 
 
 

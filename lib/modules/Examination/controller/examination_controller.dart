@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../service/examination_service.dart';
+import '../../../socket_service.dart'; // Make sure you have this
 
 class ExaminationController extends GetxController {
   var isLoading = true.obs;
@@ -11,6 +12,43 @@ class ExaminationController extends GetxController {
   void onInit() {
     super.onInit();
     fetchExaminationStatus();
+
+    // ✅ Listen for examination approval updates
+    SocketService().on('examStatusChanged', _handleExamStatusChanged);
+
+    // ✅ Optional: Listen for course updates to trigger status refresh
+    SocketService().on('course:updated', _handleCourseUpdate);
+  }
+
+  @override
+  void onClose() {
+    SocketService().off('examStatusChanged', _handleExamStatusChanged);
+    SocketService().off('course:updated', _handleCourseUpdate);
+    super.onClose();
+  }
+
+  // 🔁 Called when course record is updated in backend
+  void _handleCourseUpdate(dynamic data) {
+    final studentId = data?['studentId'];
+    final message = data?['message'] ?? '';
+
+    print('[SOCKET] 📚 Course Updated: $studentId → $message');
+    // Optionally reload eligibility status if it's the current student
+    fetchExaminationStatus();
+  }
+
+  // ✅ Called when backend emits approval/rejection
+  void _handleExamStatusChanged(dynamic data) {
+    final studentId = data?['studentId'];
+    final newStatus = data?['status'];
+    final newRemarks = data?['remarks'] ?? '';
+
+    print('[SOCKET] 🎓 Exam status update: $newStatus');
+
+    if (newStatus != null) {
+      status.value = newStatus;
+      remarks.value = newRemarks;
+    }
   }
 
   Future<void> fetchExaminationStatus() async {
