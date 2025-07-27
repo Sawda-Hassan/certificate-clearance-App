@@ -13,10 +13,8 @@ class ExaminationController extends GetxController {
     super.onInit();
     fetchExaminationStatus();
 
-    // ✅ Listen for examination approval updates
+    // ✅ Correct socket event name from backend
     SocketService().on('examStatusChanged', _handleExamStatusChanged);
-
-    // ✅ Optional: Listen for course updates to trigger status refresh
     SocketService().on('course:updated', _handleCourseUpdate);
   }
 
@@ -31,13 +29,12 @@ class ExaminationController extends GetxController {
   void _handleCourseUpdate(dynamic data) {
     final studentId = data?['studentId'];
     final message = data?['message'] ?? '';
-
     print('[SOCKET] 📚 Course Updated: $studentId → $message');
-    // Optionally reload eligibility status if it's the current student
-    fetchExaminationStatus();
+
+    fetchExaminationStatus(); // Re-check eligibility
   }
 
-  // ✅ Called when backend emits approval/rejection
+  // ✅ Called when exam approval/rejection is emitted via socket
   void _handleExamStatusChanged(dynamic data) {
     final studentId = data?['studentId'];
     final newStatus = data?['status'];
@@ -45,12 +42,16 @@ class ExaminationController extends GetxController {
 
     print('[SOCKET] 🎓 Exam status update: $newStatus');
 
-    if (newStatus != null) {
-      status.value = newStatus;
-      remarks.value = newRemarks;
-    }
+    // ✅ Use safe delayed update to avoid setState/build conflict
+    Future.microtask(() {
+      if (newStatus != null) {
+        status.value = newStatus;
+        remarks.value = newRemarks;
+      }
+    });
   }
 
+  // 📥 Called on init or refresh
   Future<void> fetchExaminationStatus() async {
     try {
       isLoading.value = true;

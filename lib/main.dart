@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'socket_service.dart'; // ✅ Make sure the path is correct
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -69,6 +70,7 @@ Future<void> main() async {
 
   // ✅ Local storage
   await GetStorage.init();
+  SocketService(); // 🔥 This makes socket.connect() run!
 
   // ✅ Launch app
   runApp(const ClearanceApp());

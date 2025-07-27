@@ -1,4 +1,3 @@
-// ✅ socket_service.dart
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketService {
@@ -9,32 +8,42 @@ class SocketService {
 
   SocketService._internal() {
     socket = IO.io(
-'http://192.168.100.8:5000', // ✅ For real Android/iOS device
-
-      <String, dynamic>{
-        'transports': ['websocket'],
-        'autoConnect': true,
-        'forceNew': true,
-        'reconnection': true,
-        'reconnectionAttempts': 10,
-        'reconnectionDelay': 3000,
-      },
+      'http://10.0.2.2:5000', // ✅ Use this for Android emulator
+      IO.OptionBuilder()
+          .setTransports(['websocket']) // ✅ Only use WebSocket
+          .enableAutoConnect() // ✅ Automatically reconnect
+          .build(),
     );
 
-    socket.onConnect((_) => print('[SOCKET] ✅ Connected!'));
-    socket.onConnectError((e) => print('[SOCKET] ❌ Connect error: $e'));
-    socket.onError((e) => print('[SOCKET] ❌ Error: $e'));
-    socket.onDisconnect((_) => print('[SOCKET] 🔌 Disconnected!'));
+    // ✅ Register all event listeners BEFORE connecting
+    socket.onConnect((_) {
+      print('[SOCKET] ✅ Connected!');
+    });
 
-    // Catch-all debug logger
+    socket.onConnectError((err) {
+      print('[SOCKET] ❌ Connect Error: $err');
+    });
+
+    socket.onError((err) {
+      print('[SOCKET] ❌ General Error: $err');
+    });
+
+    socket.onDisconnect((_) {
+      print('[SOCKET] 🔌 Disconnected!');
+    });
+
     socket.onAny((event, data) {
       print('[SOCKET DEBUG] $event → $data');
     });
+
+    // ✅ Finally, connect
+    socket.connect();
   }
 
+  /// Wait until connected before registering listener
   void waitUntilConnectedAndListen(String event, void Function(dynamic) handler) {
     if (socket.connected) {
-      print('[SOCKET] 🔔 Listening to $event immediately');
+      print('[SOCKET] 🔔 Already connected. Listening to $event now');
       on(event, handler);
     } else {
       print('[SOCKET] ⏳ Waiting to connect before listening to $event');
@@ -45,27 +54,29 @@ class SocketService {
     }
   }
 
+  /// Register a listener for a socket event
   void on(String event, void Function(dynamic) handler) {
-    socket.off(event);
+    socket.off(event); // remove previous
     socket.on(event, handler);
     print('[SOCKET] 🟢 Registered listener for $event');
   }
 
+  /// Stop listening to a socket event
   void off(String event, [void Function(dynamic)? handler]) {
     if (handler != null) {
-      print('[SOCKET] 🔕 Removing specific handler for $event');
       socket.off(event, handler);
     } else {
-      print('[SOCKET] 🔕 Removing all handlers for $event');
       socket.off(event);
     }
   }
 
+  /// Emit a socket event with data
   void emit(String event, dynamic data) {
     print('[SOCKET] 🚀 Emitting $event with data: $data');
     socket.emit(event, data);
   }
 
+  /// Disconnect the socket
   void disconnect() {
     print('[SOCKET] 🔌 Manually disconnecting socket');
     socket.disconnect();

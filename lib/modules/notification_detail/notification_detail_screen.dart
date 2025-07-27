@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../modules/notification/model/notification_model.dart';
+import '../../routes/app_routes.dart'; // ✅ Make sure this contains AppRoutes.nameUpload
 
 class NotificationDetailScreen extends StatelessWidget {
   final NotificationModel notification;
@@ -67,6 +69,27 @@ class NotificationDetailScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+
+                // ✅ Conditionally show Re-upload Button
+                if (notification.type == "name-correction-rejected") ...[
+                  const SizedBox(height: 30),
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Get.toNamed(AppRoutes.nameUpload);
+                      },
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Re-upload Document'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -67,6 +67,7 @@ class StudentWelcomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
 
+            // Image
             Expanded(
               child: Center(
                 child: Image.asset(
@@ -95,30 +96,32 @@ class StudentWelcomeScreen extends StatelessWidget {
                                   .value!
                                   .studentId;
 
-                              // Start clearance backend entry
                               await facultyCtrl.startClearance();
-
                               bool navigated = false;
 
-                              // 1️⃣ Check Final Clearance and Name Correction Status
+                              // 1️⃣ Check Final Clearance + Name Correction Status
                               try {
                                 final finalCtrl = Get.put(ClearanceController());
                                 await finalCtrl.loadClearance(studentId);
 
-                                final approvedCount = finalCtrl.steps
+                                final approvedSteps = finalCtrl.steps
                                     .where((s) => s.status.toLowerCase() == 'approved')
                                     .length;
 
-                                // Check if all phases and name correction are approved
                                 final nameCorrectionStatus = await finalCtrl.checkNameCorrectionStatus(studentId);
 
-                                // Only navigate to FinalClearanceStatus if all clearance phases and name correction are approved
-                                if (approvedCount == 5 && nameCorrectionStatus == 'approved') { // Adjust the approvedCount if more steps exist
+                                final allCleared = approvedSteps == 5;
+                                final hasSelectedNameCorrection =
+                                    nameCorrectionStatus != null &&
+                                    nameCorrectionStatus != 'null' &&
+                                    nameCorrectionStatus.isNotEmpty;
+
+                                if (allCleared && hasSelectedNameCorrection) {
                                   Get.to(() => const FinalClearanceStatus());
                                   navigated = true;
                                 }
                               } catch (e) {
-                                print('⚠️ Final clearance or name correction not available: $e');
+                                print('⚠️ Final clearance or name correction check failed: $e');
                               }
 
                               if (navigated) return;
@@ -130,7 +133,6 @@ class StudentWelcomeScreen extends StatelessWidget {
                                 final groupCleared =
                                     groupCtrl.clearanceStatus.value?.groupPhaseCleared ?? false;
 
-                                // Only navigate to GroupClearanceStatusPage if the group phase is cleared
                                 if (groupCleared) {
                                   Get.to(() => const GroupClearanceStatusPage());
                                   navigated = true;
@@ -139,10 +141,10 @@ class StudentWelcomeScreen extends StatelessWidget {
                                 print('⚠️ Group clearance not available: $e');
                               }
 
-                              if (navigated) return;
-
-                              // 3️⃣ If nothing started or all failed → Faculty
-                              Get.to(() => FacultyClearancePage());
+                              if (!navigated) {
+                                // 3️⃣ Fallback to Faculty Clearance
+                                Get.to(() => const FacultyClearancePage());
+                              }
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0A2647),
