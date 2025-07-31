@@ -193,9 +193,10 @@ class NameUploadPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 18),
                                     ElevatedButton(
-                                      onPressed: () {
-                                        Get.offAllNamed(AppRoutes.finalStatus);
-                                      },
+  onPressed: () {
+      final route = Get.arguments?['returnToRoute'] ?? AppRoutes.finalStatus;
+      Get.offAllNamed(route);
+    },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: _navy,
                                         padding: const EdgeInsets.symmetric(

@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'package:clearance_app/modules/profile/views/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-
+import '../../widgets/curved_app_bar.dart';
 import '../../routes/app_routes.dart';
 import 'controlerr/faculty_controller.dart';
 import './model/faculty_models.dart' as custom;
@@ -87,7 +88,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                         color: _navy,
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 10),
 
                     // Status Card
                     Card(
@@ -124,16 +125,16 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 35),
 
                     if (statusLabel == 'Cleared') ...[
                       _statusCard(Icons.check_circle, '🎉 Congratulations!', 'Your faculty clearance is complete.', _green, bgColor: const Color(0xFFEAFBF1))
                     ] else if (statusLabel == 'Pending') ...[
-                      _statusCard(Icons.hourglass_top, '⏳ In Progress', 'Your faculty clearance is under review.', Colors.orange, bgColor: _lightBlue)
+                      _statusCard(Icons.hourglass_top, 'In Progress', 'Your faculty clearance is under review.', Colors.orange, bgColor: _lightBlue)
                     ] else if (statusLabel == 'Rejected') ...[
-                      _statusCard(Icons.cancel, '❌ Rejected', ctrl.rejectionReason.value.isNotEmpty ? ctrl.rejectionReason.value : 'Your faculty clearance was rejected. Please review and resubmit.', Colors.red, bgColor: const Color(0xFFFFEBEB))
+                      _statusCard(Icons.cancel, 'Rejected', ctrl.rejectionReason.value.isNotEmpty ? ctrl.rejectionReason.value : 'Your faculty clearance was rejected. Please review and resubmit.', Colors.red, bgColor: const Color(0xFFFFEBEB))
                     ] else if (statusLabel == 'Incomplete') ...[
-                      _statusCard(Icons.warning_amber_rounded, '⚠️ Incomplete', ctrl.rejectionReason.value.isNotEmpty ? ctrl.rejectionReason.value : 'Your faculty clearance is marked as incomplete. Please submit the required documents.', Colors.deepPurple, bgColor: const Color(0xFFF3F0FF))
+                      _statusCard(Icons.warning_amber_rounded, ' Incomplete', ctrl.rejectionReason.value.isNotEmpty ? ctrl.rejectionReason.value : 'Your faculty clearance is marked as incomplete. Please submit the required documents.', Colors.deepPurple, bgColor: const Color(0xFFF3F0FF))
                     ],
 
                     const SizedBox(height: 36),
@@ -192,7 +193,7 @@ class _FacultyClearancePageState extends State<FacultyClearancePage> {
                       ),
                     ),
 
-                    const SizedBox(height: 56),
+                    const SizedBox(height:27),
 
                     Padding(
                       padding: const EdgeInsets.fromLTRB(49, 12, 49, 59),
@@ -264,44 +265,6 @@ Map<String, dynamic> facultyStatusLabel(String status) {
   }
 }
 
-class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  const CurvedAppBar({super.key, required this.title});
-
-  @override
-  Size get preferredSize => const Size.fromHeight(130);
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _AppBarWaveClipper(),
-      child: Container(
-        height: preferredSize.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF023B70), Color(0xFF1C2E63)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              const Align(alignment: Alignment.topLeft, child: BackButton(color: Colors.white)),
-              Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _AppBarWaveClipper extends CustomClipper<Path> {
   @override
@@ -357,10 +320,12 @@ class _BottomNav extends StatelessWidget {
               Get.offAllNamed('/student-welcome');
               break;
             case 3:
-              Get.offAllNamed(AppRoutes.profile);
+               Get.to(() =>  ProfileScreen(), arguments: {'returnToRoute': AppRoutes.facultyClearance});
+
               break;
             case 4:
-              Get.to(() => ChatbotScreen());
+             Get.to(() =>  ChatbotScreen(), arguments: {'returnToRoute': AppRoutes.facultyClearance});
+
               break;
           }
         },

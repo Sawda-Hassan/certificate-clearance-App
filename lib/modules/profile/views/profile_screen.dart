@@ -17,9 +17,10 @@ class ProfileScreen extends StatelessWidget {
        appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-  Get.offAll(() => const FinalClearanceStatus());
-},
+      onPressed: () {
+      final route = Get.arguments?['returnToRoute'] ?? AppRoutes.finalStatus;
+      Get.offAllNamed(route);
+    },
 
         ),
         title: const Text('Profile'),
@@ -28,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 26, 14, 94),
       ),
       
-      bottomNavigationBar: const _BottomNav(),
+      //bottomNavigationBar: const _BottomNav(),
       body: SafeArea(
         child: Obx(() {
           final student = authController.loggedInStudent.value;
@@ -207,79 +208,3 @@ class ProfileScreen extends StatelessWidget {
 // ---- Custom Bottom Navigation ----
 const Color _navy = Color(0xFF0A1E49); // Deep navy color
 
-
-class _BottomNav extends StatelessWidget {
-  const _BottomNav();
-
-  @override
-  Widget build(BuildContext context) {
-    final unread = Get.find<ChatbotBadgeController>().unreadCount;
-
-    return Obx(() {
-      return BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: const Color.fromARGB(255, 33, 3, 102),
-        unselectedItemColor: Colors.black.withOpacity(0.5),
-        type: BottomNavigationBarType.fixed,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.event_note),
-            label: 'apointment',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Status',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notification',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Image.asset('assets/images/chat.png', width: 44, height: 44),
-                if (unread.value > 0)
-                  Positioned(
-                    top: -2,
-                    right: -2,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            activeIcon: Image.asset('assets/images/ca.png', width: 24, height: 24),
-            label: 'Chatbot',
-          ),
-        ],
-         onTap: (index) {
-  switch (index) {
-    case 0:
-      Get.offAllNamed(AppRoutes.appointment);
-      break;
-    case 1:
-      Get.offAllNamed(AppRoutes.finalStatus); // ✅ Add this line
-      break;
-    case 2:
-      Get.offAllNamed(AppRoutes.notification);
-      break;
-    case 3:
-      Get.offAllNamed(AppRoutes.profile);
-      break;
-    case 4:
-      Get.to(() => ChatbotScreen());
-      break;
-  }
-});});}
-
-    }

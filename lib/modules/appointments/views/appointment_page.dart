@@ -26,9 +26,10 @@ class AppointmentPage extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-  Get.offAll(() => const FinalClearanceStatus());
-},
+           onPressed: () {
+      final route = Get.arguments?['returnToRoute'] ?? AppRoutes.finalStatus;
+      Get.offAllNamed(route);
+    },
         ),
         title: const Text("Appointment"),
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 22),

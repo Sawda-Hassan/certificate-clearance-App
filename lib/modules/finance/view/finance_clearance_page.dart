@@ -1,3 +1,5 @@
+import 'package:clearance_app/modules/appointments/views/appointment_page.dart';
+import 'package:clearance_app/modules/profile/views/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -393,16 +395,20 @@ class _BottomNav extends StatelessWidget {
               // Status page (current)
               break;
             case 1:
-              Get.toNamed('/appointment'); // ✅ appointment route
+                    Get.to(() =>  AppointmentPage(), arguments: {'returnToRoute': AppRoutes.financeClearance});
+
               break;
             case 2:
-              Get.toNamed('/notifications');
+                    Get.to(() => const NotificationScreen(), arguments: {'returnToRoute': AppRoutes.financeClearance});
+
               break;
             case 3:
-              Get.offAllNamed(AppRoutes.profile);
+                    Get.to(() =>  ProfileScreen(), arguments: {'returnToRoute': AppRoutes.financeClearance});
+
               break;
             case 4:
-              Get.to(() => ChatbotScreen());
+                    Get.to(() => const ChatbotScreen(), arguments: {'returnToRoute': AppRoutes.financeClearance});
+
               break;
           }
         },

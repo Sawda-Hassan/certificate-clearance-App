@@ -1,3 +1,4 @@
+import 'package:clearance_app/modules/profile/views/profile_screen.dart';
 import 'package:flutter/material.dart' hide StepState;
 import 'package:get/get.dart';
 import '../../../routes/app_routes.dart';
@@ -8,76 +9,11 @@ import '../../chatbot/chatbot_screen.dart';
 import '../../chatbot/chatbot_badge_controller.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import '../../../widgets/curved_app_bar.dart';
 
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
-
-// ---- Curved AppBar ----
-class CurvedAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  const CurvedAppBar({Key? key, required this.title}) : super(key: key);
-
-  @override
-  Size get preferredSize => const Size.fromHeight(130);
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _AppBarWaveClipper(),
-      child: Container(
-        height: preferredSize.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF022A42), Color(0xFF2E1B61)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Get.back(),
-                ),
-              ),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AppBarWaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) => Path()
-    ..lineTo(0, size.height * .75)
-    ..quadraticBezierTo(size.width * .25, size.height, size.width * .5, size.height * .9)
-    ..quadraticBezierTo(size.width * .75, size.height * .8, size.width, size.height * .9)
-    ..lineTo(size.width, 0)
-    ..close();
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
 
 class LibraryClearancePage extends StatefulWidget {
   const LibraryClearancePage({Key? key}) : super(key: key);
@@ -115,23 +51,11 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
               ? Colors.red
               : Colors.orange;
 
-      final statusIcon = isLibraryApproved
-          ? Icons.emoji_events
-          : isLibraryRejected
-              ? Icons.cancel
-              : Icons.hourglass_empty;
-
       final statusLabel = isLibraryApproved
           ? 'Cleared'
           : isLibraryRejected
               ? 'Rejected'
-              : 'Pending';
-
-      final statusMsg = isLibraryApproved
-          ? 'Your library clearance is successfully cleared'
-          : isLibraryRejected
-              ? 'Your library clearance was rejected'
-              : 'Your library clearance is pending';
+              : 'pending';
 
       final steps = [
         custom.ClearanceStep('Faculty', custom.StepState.approved),
@@ -194,44 +118,19 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 55),
+              const SizedBox(height: 40),
 
-              // 🔔 Status message
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 460),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _lightBlue,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(statusIcon, color: statusColor, size: 18),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            isLibraryRejected && ctrl.remarks.value.isNotEmpty
-                                ? ctrl.remarks.value
-                                : statusMsg,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: _navy,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 58),
+              // 🔔 Status Card like Faculty
+              if (isLibraryApproved) ...[
+                _statusCard(Icons.check_circle, '🎉 Congratulations!', 'Your library clearance is complete.', _green, bgColor: const Color(0xFFEAFBF1))
+              ] else if (isLibraryRejected) ...[
+                _statusCard(Icons.cancel, 'Rejected', ctrl.remarks.value.isNotEmpty ? ctrl.remarks.value : 'Your library clearance was rejected.', Colors.red, bgColor: const Color(0xFFFFEBEB))
+              ] else ...[
+                _statusCard(Icons.hourglass_top, 'In Progress', 'Your library clearance is under review.', Colors.orange, bgColor: _lightBlue)
+              ],
 
-              // ✅ Clearance Stepper
+              const SizedBox(height: 45),
+
               ClearanceStepper(steps: steps, progress: progress),
               const SizedBox(height: 40),
 
@@ -327,6 +226,32 @@ class _LibraryClearancePageState extends State<LibraryClearancePage> {
       );
     });
   }
+
+  // ✅ Add this inside the class to fix the _statusCard error
+  Widget _statusCard(IconData icon, String title, String msg, Color color, {Color? bgColor}) {
+    return Container(
+      decoration: BoxDecoration(color: bgColor ?? _lightBlue, borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(msg, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BottomNav extends StatelessWidget {
@@ -373,10 +298,10 @@ class _BottomNav extends StatelessWidget {
             Get.offAllNamed('/student-welcome');
             break;
           case 3:
-            Get.offAllNamed(AppRoutes.profile);
+            Get.to(() => ProfileScreen(), arguments: {'returnToRoute': AppRoutes.libraryClearance});
             break;
           case 4:
-            Get.to(() => ChatbotScreen());
+            Get.to(() => ChatbotScreen(), arguments: {'returnToRoute': AppRoutes.libraryClearance});
             break;
         }
       },

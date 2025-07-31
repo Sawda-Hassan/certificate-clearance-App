@@ -15,53 +15,6 @@ class FacultyController extends GetxController {
 
   String? groupId;
 
-  @override
-  void onInit() {
-    super.onInit();
-
-    final auth = Get.find<AuthController>();
-    groupId = auth.loggedInStudent.value?.groupId;
-
-    print('📥 Student groupId: $groupId');
-
-    if (groupId != null) {
-      SocketService().waitUntilConnectedAndListen(
-        'facultyStatusChanged',
-        _handleFacultyStatusChanged,
-      );
-    } else {
-      print('❌ groupId is null — cannot listen for facultyStatusChanged');
-    }
-
-    loadStatus(); // Load current faculty status from backend
-  }
-
-  @override
-  void onClose() {
-    SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged);
-    super.onClose();
-  }
-
-  void _handleFacultyStatusChanged(dynamic data) {
-    print('📡 facultyStatusChanged received: $data');
-
-    if (data is Map) {
-      final remoteGroupId = data['groupId']?.toString();
-      print('🔍 Remote groupId from socket: $remoteGroupId');
-
-      if (remoteGroupId == groupId) {
-        print('✅ Matched groupId! Updating UI...');
-        status.value = data['status'] ?? '';
-        rejectionReason.value = data['rejectionReason'] ?? '';
-        steps.assignAll(buildSteps(status.value));
-      } else {
-        print('❌ Ignored: groupId mismatch');
-      }
-    } else {
-      print('❌ Invalid socket payload — not a Map');
-    }
-  }
-
   List<ClearanceStep> buildSteps(String stat) {
     return [
       ClearanceStep(
@@ -83,11 +36,49 @@ class FacultyController extends GetxController {
   double get percent => steps.isEmpty ? 0 : approvedCount / steps.length;
   bool get allApproved => percent == 1.0;
 
+  @override
+  void onInit() {
+    super.onInit();
+
+    final auth = Get.find<AuthController>();
+    groupId = auth.loggedInStudent.value?.groupId;
+    print('📥 Student groupId: $groupId');
+
+    if (groupId != null) {
+      SocketService().waitUntilConnectedAndListen(
+        'facultyStatusChanged',
+        _handleFacultyStatusChanged,
+      );
+    } else {
+      print('❌ groupId is null — cannot listen for facultyStatusChanged');
+    }
+
+    loadStatus();
+  }
+
+  void _handleFacultyStatusChanged(dynamic data) {
+    print('📡 facultyStatusChanged received: $data');
+
+    if (data is Map && data['groupId'] == groupId) {
+      print('✅ Matched groupId: Updating UI');
+      status.value = data['status'] ?? '';
+      rejectionReason.value = data['rejectionReason'] ?? '';
+      steps.assignAll(buildSteps(status.value));
+    } else {
+      print('❌ Ignored: groupId mismatch or invalid payload');
+    }
+  }
+
+  @override
+  void onClose() {
+SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged as void Function(dynamic));
+    super.onClose();
+  }
+
   Future<void> loadStatus() async {
     try {
       isLoading.value = true;
       final result = await _svc.fetchFacultyStatus();
-
       print('📊 Fetched status: ${result['status']}, reason: ${result['rejectionReason']}');
 
       status.value = result['status'] ?? '';
@@ -110,15 +101,10 @@ class FacultyController extends GetxController {
   }
 
   Future<void> startClearance() async {
-    try {
-      isLoading.value = true;
-      await _svc.startClearance();
-      await loadStatus();
-    } catch (e) {
-      print('❌ Error starting clearance: $e');
-    } finally {
-      isLoading.value = false;
-    }
+    isLoading.value = true;
+    await _svc.startClearance();
+    await loadStatus();
+    isLoading.value = false;
   }
 
   Future<Map<String, dynamic>> getMyGroupFaculty() async {

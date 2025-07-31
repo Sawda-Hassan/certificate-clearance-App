@@ -61,37 +61,41 @@ class _PaymentscreenState extends State<Paymentscreen> {
     );
   }
 
-  void _handlePayment() async {
-    if (!_formKey.currentState!.validate()) return;
+void _handlePayment() async {
+  if (!_formKey.currentState!.validate()) return;
 
-    String phoneText = _phoneController.text.trim();
-    final amountText = _amountController.text.trim();
-    final studentId = _authController.studentId;
+  String phoneText = _phoneController.text.trim();
+  final amountText = _amountController.text.trim();
+  final studentId = _authController.studentId;
 
-    if (phoneText.startsWith('61') && phoneText.length == 9) {
-      phoneText = '252$phoneText';
-    }
-
-    final amount = double.tryParse(amountText);
-    if (amount == null || amount <= 0) return;
-
-    try {
-      await _paymentController.pay(
-        studentId: studentId,
-        phone: phoneText,
-        amount: amount,
-      );
-
-      if (_paymentController.isPaymentSuccessful.value) {
-        _phoneController.clear();
-        _amountController.clear();
-        showSuccessDialog();
-      }
-    } catch (_) {
-      _paymentController.errorMessage.value =
-          "Payment failed. Please check your network or credentials.";
-    }
+  if (phoneText.startsWith('61') && phoneText.length == 9) {
+    phoneText = '252$phoneText';
   }
+
+  final amount = double.tryParse(amountText);
+  if (amount == null || amount <= 0) return;
+
+  try {
+    await _paymentController.pay(
+      studentId: studentId,
+      phone: phoneText,
+      amount: amount,
+    );
+
+    if (_paymentController.isPaymentSuccessful.value) {
+      _phoneController.clear();
+      _amountController.clear();
+
+      /// ✅ FIX: Defer dialog so it doesn't run during Obx render
+      Future.microtask(() {
+        showSuccessDialog();
+      });
+    }
+  } catch (_) {
+    _paymentController.errorMessage.value =
+        "Payment failed. Please check your network or credentials.";
+  }
+}
 
   @override
   Widget build(BuildContext context) {

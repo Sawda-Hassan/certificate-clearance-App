@@ -13,8 +13,8 @@ class OptionButtons extends StatelessWidget {
       children: [
         _buildButton("Where is my certificate?"),
         _buildButton("I paid my fees."),
-        _buildButton("Can I reschedule?"),
         _buildButton("Contact faculty"),
+        _buildButton("Back to general"), // Changed from "resolved"
       ],
     );
   }
@@ -24,7 +24,7 @@ class OptionButtons extends StatelessWidget {
       onPressed: () => onOptionSelected(text),
       child: Text(text),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: text == "Back to general" ? Colors.green : Colors.deepPurpleAccent,
         foregroundColor: Colors.white,
       ),
     );

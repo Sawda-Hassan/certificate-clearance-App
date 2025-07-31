@@ -1,3 +1,4 @@
+import 'package:clearance_app/modules/profile/views/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -13,7 +14,7 @@ import '../../FacultyClearancepage/model/faculty_models.dart' as custom;
 const _navy = Color(0xFF0A2647);
 const _green = Color(0xFF35C651);
 const _lightBlue = Color(0xFFE8F3FF);
-const _orange = Colors.orange;
+const _orange = Color.fromARGB(255, 236, 144, 6);
 
 Map<String, dynamic> examStatusLabel(String status) {
   switch (status) {
@@ -298,10 +299,13 @@ class BottomNav extends StatelessWidget {
               Get.offAllNamed('/student-welcome');
               break;
             case 3:
-              Get.offAllNamed(AppRoutes.profile);
+           Get.to(() => ProfileScreen(), arguments: {'returnToRoute': AppRoutes.examClearance});
+
               break;
             case 4:
               Get.to(() => ChatbotScreen());
+          Get.to(() =>  ChatbotScreen(), arguments: {'returnToRoute': AppRoutes.examClearance});
+
               break;
           }
         },

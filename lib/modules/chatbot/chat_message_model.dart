@@ -11,6 +11,7 @@ class ChatMessage {
   ChatMessage({
     required this.id,
     required this.senderId,
+    
     required this.senderType,
     required this.message,
     required this.department,

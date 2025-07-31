@@ -1,3 +1,6 @@
+import 'package:clearance_app/modules/appointments/views/appointment_page.dart';
+import 'package:clearance_app/modules/notification/view/notification_screen.dart';
+import 'package:clearance_app/modules/profile/views/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -280,16 +283,18 @@ class _BottomNav extends StatelessWidget {
             Get.offAllNamed(AppRoutes.home);
             break;
           case 1:
-            Get.offAllNamed(AppRoutes.finalStatus);
+          Get.to(() =>  GroupClearanceStatusPage(), arguments: {'returnToRoute': AppRoutes.groupClearanceStatus});
+
             break;
           case 2:
-            Get.offAllNamed(AppRoutes.notification);
+      Get.to(() => const NotificationScreen(), arguments: {'returnToRoute': AppRoutes.groupClearanceStatus});
             break;
           case 3:
-            Get.offAllNamed(AppRoutes.appointment);
+        Get.to(() =>  AppointmentPage(), arguments: {'returnToRoute': AppRoutes.groupClearanceStatus});
+
             break;
           case 4:
-            Get.offAllNamed(AppRoutes.profile);
+      Get.to(() =>  ProfileScreen(), arguments: {'returnToRoute': AppRoutes.groupClearanceStatus});
             break;
         }
       },

@@ -1,3 +1,4 @@
+import 'package:clearance_app/modules/FacultyClearancepage/FacultyClearancePage.dart';
 import 'package:get/get.dart';
 
 // Screens
@@ -106,6 +107,8 @@ GetPage(
   name: AppRoutes.groupClearanceStatus,
   page: () => const GroupClearanceStatusPage(),
 ),
+GetPage(name: AppRoutes.facultyClearance, page: () => const FacultyClearancePage()), // ✅ NEW
+
   ];
   
   

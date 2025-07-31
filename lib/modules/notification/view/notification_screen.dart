@@ -5,7 +5,7 @@ import '../controller/notification_controller.dart';
 import '../model/notification_model.dart';
 import '../../Final Clearance Status/veiw/final_clearance_status.dart';
 import '../../notification_detail/notification_detail_screen.dart';
-
+import '../../../routes/app_routes.dart';
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
@@ -23,8 +23,9 @@ class NotificationScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Get.offAll(() => const FinalClearanceStatus());
-          },
+      final route = Get.arguments?['returnToRoute'] ?? AppRoutes.finalStatus;
+      Get.offAllNamed(route);
+    },
         ),
         title: const Text('Notifications'),
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),

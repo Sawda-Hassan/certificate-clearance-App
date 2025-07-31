@@ -30,7 +30,7 @@ class _FinalClearanceStatusState extends State<FinalClearanceStatus> {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6F9),
       appBar: const CurvedAppBar(title: " Clearance Status"),
-      bottomNavigationBar: const _BottomNav(),
+bottomNavigationBar: const _BottomNav(currentIndex: 1),
       body: Column(
         children: [
           Expanded(
@@ -61,7 +61,7 @@ class _FinalClearanceStatusState extends State<FinalClearanceStatus> {
                         margin: const EdgeInsets.only(left: 20, bottom: 16),
                         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 233, 226, 226),
+                          color: const Color.fromARGB(255, 255, 255, 255),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Row(
@@ -199,9 +199,9 @@ class _FinalClearanceStatusState extends State<FinalClearanceStatus> {
     }
   }
 }
-
 class _BottomNav extends StatelessWidget {
-  const _BottomNav();
+  final int currentIndex;
+  const _BottomNav({required this.currentIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -209,27 +209,15 @@ class _BottomNav extends StatelessWidget {
 
     return Obx(() {
       return BottomNavigationBar(
-        currentIndex: 1,
+        currentIndex: currentIndex,
         selectedItemColor: const Color.fromARGB(255, 33, 3, 102),
         unselectedItemColor: Colors.black.withOpacity(0.5),
         type: BottomNavigationBarType.fixed,
         items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.event_note),
-            label: 'apointment',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Status',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notification',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.event_note), label: 'apointment'),
+          const BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Status'),
+          const BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
           BottomNavigationBarItem(
             icon: Stack(
               clipBehavior: Clip.none,
@@ -254,25 +242,27 @@ class _BottomNav extends StatelessWidget {
             label: 'Chatbot',
           ),
         ],
-     onTap: (index) {
-  switch (index) {
-    case 0:
-      Get.offAllNamed(AppRoutes.appointment);
-      break;
-    case 1:
-      Get.offAllNamed(AppRoutes.finalStatus); // ✅ Add this line
-      break;
-    case 2:
-      Get.offAllNamed(AppRoutes.notification);
-      break;
-    case 3:
-      Get.offAllNamed(AppRoutes.profile);
-      break;
-    case 4:
-      Get.to(() => ChatbotScreen());
-      break;
+        onTap: (index) {
+          if (index == currentIndex) return; // 💡 Prevent reloading current page
+          switch (index) {
+            case 0:
+              Get.offAllNamed(AppRoutes.appointment);
+              break;
+            case 1:
+              Get.offAllNamed(AppRoutes.finalStatus);
+              break;
+            case 2:
+              Get.offAllNamed(AppRoutes.notification);
+              break;
+            case 3:
+              Get.offAllNamed(AppRoutes.profile);
+              break;
+            case 4:
+              Get.to(() => const ChatbotScreen());
+              break;
+          }
+        },
+      );
+    });
   }
-});});}
-
-    }
-  
+}
