@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import './chat_message_model.dart';
 import './chatbot_service.dart';
 import '../../socket_service.dart';
@@ -10,22 +11,38 @@ class ChatbotController extends GetxController {
   final currentDepartment = 'general'.obs;
 
   final allMessages = <ChatMessage>[].obs;
+  final currentMessages = <ChatMessage>[].obs;
+
   final isBotTyping = false.obs;
   final isUserTyping = false.obs;
 
   final textController = TextEditingController();
   final scrollController = ScrollController();
-
   final ChatbotService _service = ChatbotService();
 
   @override
   void onInit() {
     super.onInit();
+
+    // ✅ Fetch initial message history
     fetchMessages();
 
-    // ✅ Listen for new messages
-    SocketService().on('newMessage', handleNewMessage);
-    print('📡 Socket listening for "newMessage"...');
+    // ✅ Get studentId from storage
+    final box = GetStorage();
+    final studentId = box.read('studentId');
+
+    if (studentId == null) {
+      print('❌ No studentId found in GetStorage');
+      return;
+    }
+
+    // ✅ Join personal room to receive real-time messages
+    SocketService().socket.emit('joinRoom', studentId);
+    print('🔔 joinRoom emitted with ID: $studentId');
+
+    // ✅ Listen to newMessage
+    SocketService().waitUntilConnectedAndListen('newMessage', handleNewMessage);
+    print('📱 Listening to newMessage event...');
 
     // ✅ Clear badge
     Future.microtask(() {
@@ -35,106 +52,115 @@ class ChatbotController extends GetxController {
     });
   }
 
-  List<ChatMessage> get currentMessages {
-    return allMessages.where((msg) => msg.department == currentDepartment.value).toList();
-  }
-
   void switchDepartment(String dept) {
     currentDepartment.value = dept;
-    scrollToBottom();
+    updateCurrentMessages();
+    Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
+  }
+
+  void updateCurrentMessages() {
+    currentMessages.value = allMessages
+        .where((msg) => msg.department == currentDepartment.value)
+        .toList();
+    print('📊 Updated currentMessages: ${currentMessages.length}');
   }
 
   void handleNewMessage(dynamic data) {
     try {
       final newMessage = ChatMessage.fromJson(data);
-      print('📨 Received message: ${newMessage.message} | From: ${newMessage.senderType}');
+      print('📨 Socket: ${newMessage.message} | Dept: ${newMessage.department} | From: ${newMessage.senderType}');
 
       final alreadyExists = allMessages.any((m) => m.id == newMessage.id);
       if (!alreadyExists) {
         allMessages.add(newMessage);
         allMessages.refresh();
+        updateCurrentMessages();
+        Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
 
-        if (newMessage.department == currentDepartment.value) {
-          scrollToBottom();
+        final normalizedDept = newMessage.department.toLowerCase().replaceAll(" ", "_");
+        if (normalizedDept != currentDepartment.value && departments.contains(normalizedDept)) {
+          currentDepartment.value = normalizedDept;
         }
+      } else {
+        print('🔁 Message already exists, skipped.');
       }
     } catch (e) {
-      print("❌ Error handling new message: $e");
+      print('❌ Error in handleNewMessage: $e');
     }
   }
 
   void sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    final trimmed = text.trim();
+    final department = currentDepartment.value;
     textController.clear();
     isUserTyping.value = true;
 
     try {
-      final response = await _service.sendRawMessage(trimmed, department: currentDepartment.value);
+      final response = await _service.sendRawMessage(text, department: department);
+      print('📥 Response received: $response');
 
-      // ✅ Add student message manually
-      if (response != null && response['studentMessage'] != null) {
-        final msg = ChatMessage.fromJson(response['studentMessage']);
-        allMessages.add(msg);
-        allMessages.refresh();
-        print("✅ Added student message immediately: ${msg.message}");
-        scrollToBottom();
-
-        // Auto-switch if routing occurred
-        if (msg.department != currentDepartment.value &&
-            departments.contains(msg.department)) {
-          currentDepartment.value = msg.department;
-          print('🔁 Switched to ${msg.department}');
+      final studentMsg = response?['studentMessage'];
+      if (studentMsg != null) {
+        final msg = ChatMessage.fromJson(studentMsg);
+        if (!allMessages.any((m) => m.id == msg.id)) {
+          allMessages.add(msg);
+          allMessages.refresh();
+          updateCurrentMessages();
+          Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
         }
       }
 
-      // ✅ Add bot response if exists
-      if (response != null && response['botResponse'] != null) {
+      final botMsg = response?['botResponse'];
+      if (botMsg != null) {
         isBotTyping.value = true;
         await Future.delayed(const Duration(milliseconds: 600));
-        final reply = ChatMessage.fromJson(response['botResponse']);
-        allMessages.add(reply);
-        allMessages.refresh();
-        isBotTyping.value = false;
-
-        if (reply.department != currentDepartment.value &&
-            departments.contains(reply.department)) {
-          currentDepartment.value = reply.department;
-          print('🔁 Switched to ${reply.department} (from bot)');
+        final reply = ChatMessage.fromJson(botMsg);
+        if (!allMessages.any((m) => m.id == reply.id)) {
+          allMessages.add(reply);
+          allMessages.refresh();
+          updateCurrentMessages();
         }
 
+        isBotTyping.value = false;
         scrollToBottom();
       }
     } catch (e) {
       print('❌ Error sending message: $e');
     } finally {
       isUserTyping.value = false;
-      allMessages.refresh();
     }
   }
 
   void goBackToGeneral() {
-    sendMessage('resolved');
+    sendMessage("resolved");
   }
 
   void scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
+    if (!scrollController.hasClients) return;
+    final offset = scrollController.position.maxScrollExtent;
+    scrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   void fetchMessages() async {
+    print('📥 Fetching messages...');
     final messages = await _service.getMessages();
     allMessages.clear();
     allMessages.addAll(messages);
     allMessages.refresh();
+    updateCurrentMessages();
+    print('✅ Loaded ${messages.length} messages');
+
+    // Optional: log breakdown by dept
+    final countsByDept = {
+      for (var dept in departments)
+        dept: messages.where((m) => m.department == dept).length
+    };
+    print('📊 Messages by dept: $countsByDept');
     scrollToBottom();
   }
 

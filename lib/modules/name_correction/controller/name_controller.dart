@@ -23,7 +23,7 @@ class NameController extends GetxController {
     print('🧠 [Storage] Retrieved ID from GetStorage: $id');
 
     if (id == null || id is! String || id.isEmpty) {
-      Get.snackbar('Error', 'Student ID not found. Please log in again.');
+    //  Get.snackbar('Error', 'Student ID not found. Please log in again.');
       isLoading.value = false;
       return;
     }
@@ -38,11 +38,11 @@ class NameController extends GetxController {
         print('✅ [Profile] Loaded: ${result.fullName}');
         student.value = result;
       } else {
-        Get.snackbar('Error', 'Failed to load student profile');
+        //Get.snackbar('Error', 'Failed to load student profile');
         print('⚠️ [Profile] API returned null');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Something went wrong');
+      //Get.snackbar('Error', 'Something went wrong');
       print('❌ [Profile] Exception: $e');
     } finally {
       isLoading.value = false;
@@ -55,7 +55,7 @@ class NameController extends GetxController {
     print('🎯 [setCorrectionRequested] studentId = $studentId');
 
     if (studentId.isEmpty) {
-      Get.snackbar("Error", "Student ID is missing");
+     // Get.snackbar("Error", "Student ID is missing");
       print("❌ [Toggle] Missing student ID.");
       return;
     }
@@ -69,11 +69,11 @@ class NameController extends GetxController {
       }
     } else {
       print('❌ [Toggle] Failed to update correction status.');
-      Get.snackbar("Error", "Failed to update name correction status");
+     // Get.snackbar("Error", "Failed to update name correction status");
     }
   }
 
   Future<void> requestCertificate() async {
-    Get.snackbar("Request sent", "Your certificate request has been submitted");
+   // Get.snackbar("Request sent", "Your certificate request has been submitted");
   }
 }

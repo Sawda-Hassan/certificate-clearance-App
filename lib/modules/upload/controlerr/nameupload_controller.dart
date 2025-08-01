@@ -29,14 +29,14 @@ class NameUploadController extends GetxController {
       selectedFile.value = File(result.files.single.path!);
       selectedFileName.value = result.files.single.name;
     } else {
-      Get.snackbar("Error", "File not selected or unsupported");
+     // Get.snackbar("Error", "File not selected or unsupported");
     }
   }
 
   /// Upload to server
   Future<void> submit(String studentId) async {
     if (!isFormValid) {
-      Get.snackbar('Missing', 'Please complete all fields.');
+     // Get.snackbar('Missing', 'Please complete all fields.');
       return;
     }
 
@@ -83,16 +83,16 @@ class NameUploadController extends GetxController {
 
       if (response.statusCode == 200) {
         print("✅ Success: ${responseBody.body}");
-        Get.snackbar('Success', 'Document uploaded');
+      //  Get.snackbar('Success', 'Document uploaded');
         Get.back();
       } else {
         print("❌ Failed: ${response.statusCode}");
         print("💥 Body: ${responseBody.body}");
-        Get.snackbar('Error', 'Upload failed: ${responseBody.body}');
+       // Get.snackbar('Error', 'Upload failed: ${responseBody.body}');
       }
     } catch (e) {
       print("🚨 Exception: $e");
-      Get.snackbar('Error', 'Upload error occurred');
+    //  Get.snackbar('Error', 'Upload error occurred');
     } finally {
       isLoading.value = false;
     }

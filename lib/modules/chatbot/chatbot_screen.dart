@@ -4,8 +4,7 @@ import './chatbot_controller.dart';
 import './message_bubble.dart';
 import './option_buttons.dart';
 import './TypingIndicatorDots.dart';
-import '../../socket_service.dart';
-import '../../routes/app_routes.dart';
+
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
 
@@ -25,49 +24,118 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     'exam_office': 'Examination',
   };
 
-  @override
-  void initState() {
-    super.initState();
-    // ✅ Ensure socket is connected and listener is reattached
-    SocketService().off('newMessage');
-    SocketService().on('newMessage', controller.handleNewMessage);
-    print('🔁 Reattached socket listener in ChatbotScreen');
+  final departmentIcons = {
+    'general': Icons.home,
+    'faculty': Icons.school,
+    'library': Icons.library_books,
+    'lab': Icons.science,
+    'finance': Icons.account_balance_wallet,
+    'exam_office': Icons.assignment,
+  };
+
+  void _showDepartmentMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Select Department',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            ...controller.departments.map((dept) => ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: controller.currentDepartment.value == dept
+                          ? Colors.blue.withOpacity(0.1)
+                          : Colors.grey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      departmentIcons[dept] ?? Icons.help,
+                      color: controller.currentDepartment.value == dept
+                          ? Colors.blue
+                          : Colors.grey[600],
+                    ),
+                  ),
+                  title: Text(
+                    departmentLabels[dept] ?? dept,
+                    style: TextStyle(
+                      fontWeight: controller.currentDepartment.value == dept
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: controller.currentDepartment.value == dept
+                          ? Colors.blue
+                          : Colors.black87,
+                    ),
+                  ),
+                  trailing: controller.currentDepartment.value == dept
+                      ? const Icon(Icons.check, color: Colors.blue)
+                      : null,
+                  onTap: () {
+                    controller.switchDepartment(dept);
+                    Navigator.pop(context);
+                  },
+                )),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Jamhuriya Assistant" ),
-        backgroundColor: Colors.deepPurple,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        title: const Text(
+          "jamhuriya Assistant",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           Obx(() => controller.currentDepartment.value != 'general'
               ? IconButton(
- onPressed: () {
-      final route = Get.arguments?['returnToRoute'] ?? AppRoutes.finalStatus;
-      Get.offAllNamed(route);
-    },                  icon: const Icon(Icons.home),
+                  onPressed: controller.goBackToGeneral,
+                  icon: const Icon(Icons.arrow_back_ios),
                   tooltip: 'Back to General',
                 )
               : const SizedBox.shrink()),
-          Obx(() => DropdownButton<String>(
-                value: controller.currentDepartment.value,
-                dropdownColor: Colors.deepPurple[100],
-                underline: Container(),
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                items: controller.departments
-                    .map((dept) => DropdownMenuItem<String>(
-                          value: dept,
-                          child: Text(
-                            departmentLabels[dept] ?? dept,
-                            style: const TextStyle(color: Colors.black),
-                          ),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) controller.switchDepartment(value);
-                },
-              )),
+          IconButton(
+            onPressed: _showDepartmentMenu,
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Select Department',
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -76,32 +144,70 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           Obx(() => controller.currentDepartment.value != 'general'
               ? Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.deepPurple.withOpacity(0.1),
+                  margin: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade50, Colors.blue.shade100],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.info_outline, size: 16, color: Colors.deepPurple),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Connected to ${departmentLabels[controller.currentDepartment.value]}',
-                        style: const TextStyle(
-                          color: Colors.deepPurple,
-                          fontWeight: FontWeight.w500,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          departmentIcons[controller.currentDepartment.value] ?? Icons.help,
+                          color: Colors.white,
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Connected to ${departmentLabels[controller.currentDepartment.value]}',
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const Text(
+                              'You are now chatting with department staff',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       GestureDetector(
                         onTap: controller.goBackToGeneral,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.red.shade500,
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Text(
                             'End Chat',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
@@ -110,16 +216,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 )
               : const SizedBox.shrink()),
 
-          // ✅ Messages List
+          // Messages
           Expanded(
             child: Obx(() {
-              final messages = controller.currentMessages;
               return ListView.builder(
                 controller: controller.scrollController,
-                padding: const EdgeInsets.all(12),
-                itemCount: messages.length,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: controller.currentMessages.length,
                 itemBuilder: (context, index) {
-                  return MessageBubble(message: messages[index]);
+                  return MessageBubble(
+                    message: controller.currentMessages[index],
+                    showTime: controller.currentDepartment.value != 'general',
+                  );
                 },
               );
             }),
@@ -128,44 +236,66 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Typing Indicator
           Obx(() {
             if (controller.isBotTyping.value) {
-              return const Padding(
-                padding: EdgeInsets.only(left: 16, bottom: 10),
-                child: Row(children: [TypingIndicatorDots()]),
+              return Container(
+                margin: const EdgeInsets.only(left: 16, bottom: 10),
+                child: const Row(
+                  children: [TypingIndicatorDots()],
+                ),
               );
             }
             return const SizedBox.shrink();
           }),
 
-          // Quick Options
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: OptionButtons(onOptionSelected: controller.sendMessage),
-          ),
+          // Quick Reply Options (Hidden when in specific department)
+          Obx(() => controller.currentDepartment.value == 'general'
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: OptionButtons(onOptionSelected: controller.sendMessage),
+                )
+              : const SizedBox.shrink()),
+
           const SizedBox(height: 10),
 
-          // Input Area
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          // Input Field
+          Container(
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: controller.textController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Type your message...',
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      border: InputBorder.none,
                     ),
                     onSubmitted: controller.sendMessage,
+                    maxLines: null,
                   ),
                 ),
-                const SizedBox(width: 10),
-                IconButton(
-                  onPressed: () => controller.sendMessage(controller.textController.text),
-                  icon: const Icon(Icons.send),
-                  color: Colors.deepPurple,
+                Container(
+                  margin: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    onPressed: () => controller.sendMessage(controller.textController.text),
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    splashRadius: 20,
+                  ),
                 ),
               ],
             ),

@@ -69,8 +69,9 @@ Future<void> main() async {
   await FirebaseApi().intiNotifications();
 
   // ✅ Local storage
+  
   await GetStorage.init();
-  SocketService(); // 🔥 This makes socket.connect() run!
+Get.put(SocketService());
 
   // ✅ Launch app
   runApp(const ClearanceApp());

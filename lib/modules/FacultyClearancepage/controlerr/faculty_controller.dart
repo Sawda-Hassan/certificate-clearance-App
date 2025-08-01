@@ -15,6 +15,7 @@ class FacultyController extends GetxController {
 
   String? groupId;
 
+  /// Build the 5 clearance steps UI based on faculty status
   List<ClearanceStep> buildSteps(String stat) {
     return [
       ClearanceStep(
@@ -56,6 +57,12 @@ class FacultyController extends GetxController {
     loadStatus();
   }
 
+  @override
+  void onClose() {
+    SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged as void Function(dynamic));
+    super.onClose();
+  }
+
   void _handleFacultyStatusChanged(dynamic data) {
     print('📡 facultyStatusChanged received: $data');
 
@@ -69,17 +76,12 @@ class FacultyController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged as void Function(dynamic));
-    super.onClose();
-  }
-
+  /// Loads faculty status and updates observable values
   Future<void> loadStatus() async {
     try {
       isLoading.value = true;
+      print('📨 Fetching faculty status...');
       final result = await _svc.fetchFacultyStatus();
-      print('📊 Fetched status: ${result['status']}, reason: ${result['rejectionReason']}');
 
       status.value = result['status'] ?? '';
       rejectionReason.value = result['rejectionReason'] ?? '';
@@ -90,23 +92,38 @@ SocketService().off('facultyStatusChanged', _handleFacultyStatusChanged as void 
           : status.value == 'Error'
               ? 'Failed to fetch faculty clearance status'
               : '';
+              
+      print('📊 Fetched status: ${status.value}, reason: ${rejectionReason.value}');
     } catch (e) {
-      print('❌ Error loading status: $e');
+      print('❌ Error loading faculty status: $e');
       status.value = '';
       rejectionReason.value = '';
-      message.value = 'Failed to fetch status';
+      message.value = 'Failed to fetch faculty status';
     } finally {
       isLoading.value = false;
+      print('✅ Faculty status load complete');
     }
   }
 
+  /// Safely starts the faculty clearance process
   Future<void> startClearance() async {
-    isLoading.value = true;
-    await _svc.startClearance();
-    await loadStatus();
-    isLoading.value = false;
+    try {
+      isLoading.value = true;
+      print('🚀 Starting faculty clearance...');
+
+      await _svc.startClearance(); // e.g., POST /faculty/start
+      print('✅ Faculty clearance triggered. Now reloading status...');
+
+      await loadStatus();
+    } catch (e) {
+      print('❌ Error during startClearance(): $e');
+    } finally {
+      isLoading.value = false;
+      print('✅ startClearance done');
+    }
   }
 
+  /// Used for loading full group-level faculty record (if needed)
   Future<Map<String, dynamic>> getMyGroupFaculty() async {
     try {
       final result = await _svc.getMyGroupFaculty();

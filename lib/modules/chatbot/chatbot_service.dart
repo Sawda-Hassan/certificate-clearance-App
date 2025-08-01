@@ -5,13 +5,18 @@ import './chat_message_model.dart';
 
 class ChatbotService {
   final box = GetStorage();
-final String baseUrl = 'http://10.39.78.218:5000/api/chat';
+  final String baseUrl = 'http://10.39.78.218:5000/api/chat';
+ // 🔝 Use real IP if on physical device
 
   /// 🔑 Get the currently logged in student ID from local storage
   String get currentStudentId => box.read('id') ?? '';
 
   /// 📩 Fetch all messages for the student
   Future<List<ChatMessage>> getMessages() async {
+    final studentId = currentStudentId;
+
+    print('🧠 [ChatbotService] Using ID from GetStorage: $studentId');
+
     try {
       final response =
           await http.get(Uri.parse('$baseUrl/messages/$currentStudentId'));

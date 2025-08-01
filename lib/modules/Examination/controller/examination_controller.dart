@@ -1,6 +1,7 @@
+
 import 'package:get/get.dart';
 import '../service/examination_service.dart';
-import '../../../socket_service.dart'; // Make sure you have this
+import '../../../socket_service.dart';
 
 class ExaminationController extends GetxController {
   var isLoading = true.obs;
@@ -13,15 +14,19 @@ class ExaminationController extends GetxController {
     super.onInit();
     fetchExaminationStatus();
 
-    // ✅ Correct socket event name from backend
-    SocketService().on('examStatusChanged', _handleExamStatusChanged);
-    SocketService().on('course:updated', _handleCourseUpdate);
+    final socket = Get.find<SocketService>().socket;
+
+    socket.on('examStatusChanged', _handleExamStatusChanged);
+    socket.on('course:updated', _handleCourseUpdate);
   }
 
   @override
   void onClose() {
-    SocketService().off('examStatusChanged', _handleExamStatusChanged);
-    SocketService().off('course:updated', _handleCourseUpdate);
+    final socket = Get.find<SocketService>().socket;
+
+    socket.off('examStatusChanged', _handleExamStatusChanged);
+    socket.off('course:updated', _handleCourseUpdate);
+
     super.onClose();
   }
 
@@ -31,30 +36,29 @@ class ExaminationController extends GetxController {
     final message = data?['message'] ?? '';
     print('[SOCKET] 📚 Course Updated: $studentId → $message');
 
-    fetchExaminationStatus(); // Re-check eligibility
+    fetchExaminationStatus(); // Refresh status from API
   }
 
   // ✅ Called when exam approval/rejection is emitted via socket
   void _handleExamStatusChanged(dynamic data) {
-    final studentId = data?['studentId'];
-    final newStatus = data?['status'];
-    final newRemarks = data?['remarks'] ?? '';
+  final studentId = data?['studentId'];
+  final newStatus = data?['status'];
+  final newRemarks = data?['remarks'] ?? '';
 
-    print('[SOCKET] 🎓 Exam status update: $newStatus');
+  print('[SOCKET] 🎓 Exam status update: $newStatus');
 
-    // ✅ Use safe delayed update to avoid setState/build conflict
-    Future.microtask(() {
-      if (newStatus != null) {
-        status.value = newStatus;
-        remarks.value = newRemarks;
-      }
-    });
-  }
+  // ✅ Always re-fetch full data
+  Future.microtask(() async {
+    await fetchExaminationStatus(); // <-- revalidates status
+  });
+}
+
 
   // 📥 Called on init or refresh
   Future<void> fetchExaminationStatus() async {
     try {
       isLoading.value = true;
+
       final data = await ExaminationService.getExaminationStatus();
 
       if (data != null) {

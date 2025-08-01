@@ -4,63 +4,87 @@ class TypingIndicatorDots extends StatefulWidget {
   const TypingIndicatorDots({super.key});
 
   @override
-  _TypingIndicatorDotsState createState() => _TypingIndicatorDotsState();
+  State<TypingIndicatorDots> createState() => _TypingIndicatorDotsState();
 }
 
 class _TypingIndicatorDotsState extends State<TypingIndicatorDots>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> dotOne, dotTwo, dotThree;
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))
-          ..repeat();
-
-    dotOne = Tween<double>(begin: 0.0, end: 8.0).animate(CurvedAnimation(
-        parent: _controller, curve: const Interval(0.0, 0.3, curve: Curves.easeInOut)));
-
-    dotTwo = Tween<double>(begin: 0.0, end: 8.0).animate(CurvedAnimation(
-        parent: _controller, curve: const Interval(0.3, 0.6, curve: Curves.easeInOut)));
-
-    dotThree = Tween<double>(begin: 0.0, end: 8.0).animate(CurvedAnimation(
-        parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeInOut)));
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
+    _animationController.repeat();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _animationController.dispose();
     super.dispose();
-  }
-
-  Widget _buildDot(Animation<double> animation) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, child) => Container(
-          width: 6,
-          height: 6 + animation.value,
-          decoration: const BoxDecoration(
-            color: Colors.grey,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _buildDot(dotOne),
-        _buildDot(dotTwo),
-        _buildDot(dotThree),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.smart_toy,
+              color: Colors.white,
+              size: 14,
+            ),
+          ),
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Row(
+                children: List.generate(3, (index) {
+                  final delay = index * 0.2;
+                  final animationValue = (_animation.value - delay).clamp(0.0, 1.0);
+                  final scale = (animationValue <= 0.5)
+                      ? animationValue * 2
+                      : 2 - (animationValue * 2);
+
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Transform.scale(
+                      scale: 0.5 + (scale * 0.5),
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade600,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
